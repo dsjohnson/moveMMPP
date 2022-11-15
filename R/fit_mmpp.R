@@ -26,9 +26,9 @@ fit_mmpp <- function(data, ddl,
   dmq_list <- dm_q(model_parameters$q, ddl)
   
   tmb_data <- list(
-    N = nrow(data),
-    ns = length(unique(ddl$lambda$cell)),
-    np = max(ddl$quad_pts$period),
+    N = as.integer(nrow(data)),
+    ns = as.integer(length(unique(ddl$lambda$cell))),
+    np = as.integer(max(ddl$quad_pts$period)),
     #detections
     id = data$idx-1,
     period = as.integer(data$period-1),
@@ -37,26 +37,26 @@ fit_mmpp <- function(data, ddl,
     # lambda
     X_l = dml_list$X_l,
     fix_l = dml_list$idx_l$fix,
-    period_l = as.integer(dml_list$idx_l$period_l-1),
-    cell_l = as.integer(dml_list$idx_l$cell_l-1),
+    period_l = as.integer(dml_list$idx_l$period-1),
+    cell_l = as.integer(dml_list$idx_l$cell-1),
     idx_l = as.integer(dml_list$idx_l$idx_l-1),
     # Q
     from_q = as.integer(dmq_list$idx_q$from_cellx-1),
     to_q = as.integer(dmq_list$idx_q$to_cellx-1),
-    X_l = dmq_list$X_q,
+    X_q = dmq_list$X_q,
     idx_q = as.integer(dmq_list$idx_q$idx_q-1)
   )
   
   if(!is.null(start)){
   tmb_par <- list(
     beta_l=rep(0,ncol(dml_list$X_l)) , 
-    beta_q=rep(0,ncol(dml_list$X_q))
+    beta_q=rep(0,ncol(dmq_list$X_q))
     )
   } else{
     tmb_par=start
   }
   
-  f <- MakeADFun(
+  foo <- MakeADFun(
     data=append(list(model="mmpp"), tmb_data),
     parameters=tmb_par,
     #random=c(),

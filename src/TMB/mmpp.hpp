@@ -41,46 +41,44 @@ Type mmpp(objective_function<Type>* obj) {
   vector<Type> q_vals = exp(X_q * beta_q);
   vector<Type> l_vals = exp(X_q * beta_q);
   
-  //int N = det.size();
+  // Matrices for the HMM forward alg. 
   matrix<Type> G(ns, ns);
-  matrix<Type> Q(ns,ns); 
+  matrix<Type> Q(ns,ns);
   matrix<Type> QmLd(ns,ns);
   matrix<Type> L_mat(ns,np);
   vector<Type> L(ns);
   array<Type> P(ns);
-
-  
   matrix<Type> v(1,ns);
   matrix<Type> phi(1,ns); phi.setZero();
   Type u = 0.0;
-  Type log_lik = 0.0;
+  Type log_lik = Type(1);
   
-  Q = load_Q(from_q, to_q, idx_q, q_vals, ns);
-  L_mat = load_L(period_l, cell_l, idx_l, fix_l, l_vals, ns, np)
-  
-  // Start forward loop
-  phi(0,cell(0)) = Type(1.0);
-  for(int i=1; i<N; i++){
-    
-    if(id(i)!=id(i-1)){
-      phi.setZero(); phi(0,cell(i)) = Type(1.0);
-    } else{
-      //Q = load_Q(from, to, qvals, ns); //mod here for dynamic movement
-      L = L_mat.col(period(i));
-      QmLd = mat_minus_diag(Q, L) * dt(i-1);
-      G = expm(QmLd);
-      v = phi * G;
-      if(!isNA(cell(i))){
-        P.setZero();
-        P(cell(i)) = L(cell(i));
-        v = v.array() * P; //elementwise
-      }
-      u = v.sum();
-      log_lik += u;
-      phi = v/u;
-    }
-    
-  } // end i
+  // Q = load_Q(from_q, to_q, idx_q, q_vals, ns);
+  // L_mat = load_L(period_l, cell_l, idx_l, fix_l, l_vals, ns, np);
+  // 
+  // // Start forward loop
+  // phi(0,cell(0)) = Type(1.0);
+  // for(int i=1; i<N; i++){
+  //   
+  //   if(id(i)!=id(i-1)){
+  //     phi.setZero(); phi(0,cell(i)) = Type(1.0);
+  //   } else{
+  //     //Q = load_Q(from, to, qvals, ns); //mod here for dynamic movement
+  //     L = L_mat.col(period(i));
+  //     QmLd = mat_minus_diag(Q, L) * dt(i-1);
+  //     G = expm(QmLd);
+  //     v = phi * G;
+  //     if(!isNA(cell(i))){
+  //       P.setZero();
+  //       P(cell(i)) = L(cell(i));
+  //       v = v.array() * P; //elementwise
+  //     }
+  //     u = v.sum();
+  //     log_lik += u;
+  //     phi = v/u;
+  //   }
+  //   
+  // } // end i
   
   return -Type(2)*log_lik;
   

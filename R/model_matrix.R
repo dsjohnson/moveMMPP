@@ -34,7 +34,10 @@ dm_lambda <- function(formula, ddl){
 #' @export
 dm_q <- function(formula, ddl){
   X <- model.matrix(formula, ddl$q)
+  keep_col <- !((colMeans(X)!=1) & (apply(X, 2, sd)==0))
+  X <- X[,keep_col]
   uX <- unique(X)
+  uX <- uX[rowSums(uX)!=0,]
   dX <- data.frame(cbind(from_cellx=ddl$q$from_cellx, to_cellx=ddl$q$to_cellx, X))
   duX <- data.frame(cbind(idx_q=1:nrow(uX), uX))
   mX <- merge(dX, duX)
