@@ -39,7 +39,7 @@ matrix<Type> mat_minus_diag(matrix<Type> M, vector<Type> d){
   matrix<Type> out = M;
   int n = M.rows();
   for(int i=0; i<n; i++){
-    out(i,i) = M(i,i) - d(i);
+    out(i,i) = out(i,i) - d(i);
   }
   return out;
 }
@@ -52,6 +52,9 @@ matrix<Type> load_Q(vector<int> from, vector<int> to, vector<int> idx_q,
   for(int i=0; i<n; i++){
     Q(from(i),to(i)) = qvals(idx_q(i));
   }
+  for(int i=0; i<ns; i++){
+    Q(i,i) = -Q.row(i).sum();
+  }
   return Q;
 }
 
@@ -59,13 +62,13 @@ template<class Type>
 matrix<Type> load_L(vector<int> period_l, vector<int> cell_l, 
                     vector<int> idx_l, vector<Type> fix_l, 
                     vector<Type> l_vals, int ns, int np){
-  matrix<Type> L_mat(ns, np);
+  matrix<Type> L_mat(ns, np); L_mat.setZero();
   int N = period_l.size();
   for(int i=0; i<N; i++){
     if(isNA(fix_l(i))){
       L_mat(cell_l(i), period_l(i)) = l_vals(idx_l(i));
     } else{
-      L_mat(period_l(i), cell_l(i)) = fix_l(i);
+      L_mat(cell_l(i), period_l(i)) = fix_l(i);
     }
   }
   return L_mat;

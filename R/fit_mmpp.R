@@ -34,6 +34,7 @@ fit_mmpp <- function(data, ddl,
     period = as.integer(data$period-1),
     dt = data$delta,
     cell = as.integer(data$cellx-1),
+    cellNA =  as.integer(is.na(data$cellx)),
     # lambda
     X_l = dml_list$X_l,
     fix_l = dml_list$idx_l$fix,
@@ -49,20 +50,24 @@ fit_mmpp <- function(data, ddl,
   
   if(!is.null(start)){
   tmb_par <- list(
-    beta_l=rep(0,ncol(dml_list$X_l)) , 
-    beta_q=rep(0,ncol(dmq_list$X_q))
+    beta_l=rep(0,ncol(dml_list$X_l)), 
+    beta_q=rep(0, ncol(dmq_list$X_q))
     )
   } else{
     tmb_par=start
   }
   
+  message('Building model...')
   foo <- MakeADFun(
     data=append(list(model="mmpp"), tmb_data),
     parameters=tmb_par,
     #random=c(),
     DLL="moveMMPP_TMBExports"
   )
-  
-opt <- opm(f$par,f$fn,f$gr,f$he,hessian=FALSE,...)
+
+rep <- foo$report()
+# data.frame(id=tmb_data$id, cell=tmb_data$cell, yesna=foo$report()$yesna) %>% View()
+message('Optimizing likelihood...')  
+opt <- optimx::opm(foo$par,foo$fn,hessian=FALSE)
   
 }

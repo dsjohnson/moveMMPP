@@ -20,6 +20,7 @@ Type mmpp(objective_function<Type>* obj) {
   DATA_IVECTOR(period);   // vector of detection periods Nx1 for lambda_t model
   DATA_VECTOR(dt);        // time since last observation Nx1
   DATA_IVECTOR(cell);     // observed cell detection Nx1
+  DATA_VECTOR(cellNA);   // indicator of missing cell values.
   //LAMBDA
   DATA_MATRIX(X_l);       // Design matrix for lambda
   DATA_VECTOR(fix_l);     // ns x np vector of fixed values for lambda
@@ -39,7 +40,7 @@ Type mmpp(objective_function<Type>* obj) {
   PARAMETER_VECTOR(beta_q); // movement parameters
   
   vector<Type> q_vals = exp(X_q * beta_q);
-  vector<Type> l_vals = exp(X_q * beta_q);
+  vector<Type> l_vals = exp(X_l * beta_l);
   
   // Matrices for the HMM forward alg. 
   matrix<Type> G(ns, ns);
@@ -47,38 +48,49 @@ Type mmpp(objective_function<Type>* obj) {
   matrix<Type> QmLd(ns,ns);
   matrix<Type> L_mat(ns,np);
   vector<Type> L(ns);
-  array<Type> P(ns);
+  //vector<Type> P(ns);
   matrix<Type> v(1,ns);
   matrix<Type> phi(1,ns); phi.setZero();
   Type u = 0.0;
-  Type log_lik = Type(1);
+  Type log_lik = Type(0);
+  vector<Type> log_lik_v(N); log_lik_v.setZero();
+  matrix<Type> phi_m(1345,ns);
+  matrix<Type> v_m(1345,ns);
   
-  // Q = load_Q(from_q, to_q, idx_q, q_vals, ns);
-  // L_mat = load_L(period_l, cell_l, idx_l, fix_l, l_vals, ns, np);
+  
+  Q = load_Q(from_q, to_q, idx_q, q_vals, ns);
+  L_mat = load_L(period_l, cell_l, idx_l, fix_l, l_vals, ns, np);
   // 
   // // Start forward loop
-  // phi(0,cell(0)) = Type(1.0);
+  phi(0,cell(0)) = Type(1.0);
   // for(int i=1; i<N; i++){
-  //   
+  // for(int i=1; i<1345; i++){
   //   if(id(i)!=id(i-1)){
   //     phi.setZero(); phi(0,cell(i)) = Type(1.0);
   //   } else{
-  //     //Q = load_Q(from, to, qvals, ns); //mod here for dynamic movement
+  //     //Q = load_Q(from, to,Q_mat.col(period(i)), ns); //mod here for dynamic movement
   //     L = L_mat.col(period(i));
-  //     QmLd = mat_minus_diag(Q, L) * dt(i-1);
+  //     QmLd = mat_minus_diag(Q, L) * dt(i);
   //     G = expm(QmLd);
   //     v = phi * G;
-  //     if(!isNA(cell(i))){
-  //       P.setZero();
-  //       P(cell(i)) = L(cell(i));
-  //       v = v.array() * P; //elementwise
-  //     }
-  //     u = v.sum();
-  //     log_lik += u;
-  //     phi = v/u;
+  //     v_m.row(i) = v.row(0);
+  //     if(cellNA(i)==0){
+  //       //P.setZero();
+  //       //P(cell(i)) = L(cell(i));
+  //       //v = v.array() * P.array(); //elementwise
+  //       //u = v.sum();
+  //       log_lik += log(v(cell(i))*L(cell(i)));
+  //       phi.setZero(); phi(0,cell(i)) = Type(1);
+  //     } else{phi = v/v.sum();}
   //   }
-  //   
+  //   phi_m.row(i) = phi.row(0);
   // } // end i
+  
+  
+  REPORT(Q);
+  REPORT(phi_m);
+  
+  
   
   return -Type(2)*log_lik;
   
