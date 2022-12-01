@@ -13,4 +13,5 @@ RoxygenNote: 7.2.1
 Imports: 
     TMB (>= 1.9.0), dplyr, rmapshaper, sf, spdep, tidyr, units, lubridate, optimx
 LinkingTo: 
-    TMB
+    TMB, Rcpp, RcppArmadillo, expQ2
+NeedsCompilation: yes

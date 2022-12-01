@@ -57,17 +57,22 @@ fit_mmpp <- function(data, ddl,
     tmb_par=start
   }
   
-  message('Building model...')
-  foo <- MakeADFun(
-    data=append(list(model="mmpp"), tmb_data),
-    parameters=tmb_par,
-    #random=c(),
-    DLL="moveMMPP_TMBExports"
-  )
+  mmpp_r(tmb_par, tmb_data)
+  
+  
+  
+  # message('Building model...')
+  # foo <- MakeADFun(
+  #   data=append(list(model="mmpp"), tmb_data),
+  #   parameters=tmb_par,
+  #   #random=c(),
+  #   DLL="moveMMPP_TMBExports"
+  # )
 
-rep <- foo$report()
-# data.frame(id=tmb_data$id, cell=tmb_data$cell, yesna=foo$report()$yesna) %>% View()
+# rep <- foo$report()
+# data.frame(id=tmb_data$id, cell=tmb_data$cell, tmb_data$cellNA) %>% View()
+# data.frame(tmb_data$from_q, tmb_data$to_q) %>% View
 message('Optimizing likelihood...')  
-opt <- optimx::opm(foo$par,foo$fn,hessian=FALSE)
+opt <- optimx::opm(foo$par, foo$fn, foo$gr,foo$he, hessian=FALSE)
   
 }

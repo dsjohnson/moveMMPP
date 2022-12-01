@@ -48,14 +48,14 @@ Type mmpp(objective_function<Type>* obj) {
   matrix<Type> QmLd(ns,ns);
   matrix<Type> L_mat(ns,np);
   vector<Type> L(ns);
-  //vector<Type> P(ns);
+  vector<Type> P(ns);
   matrix<Type> v(1,ns);
   matrix<Type> phi(1,ns); phi.setZero();
   Type u = 0.0;
   Type log_lik = Type(0);
   vector<Type> log_lik_v(N); log_lik_v.setZero();
-  matrix<Type> phi_m(1345,ns);
-  matrix<Type> v_m(1345,ns);
+  // matrix<Type> phi_m(1345,ns);
+  // matrix<Type> v_m(1345,ns);
   
   
   Q = load_Q(from_q, to_q, idx_q, q_vals, ns);
@@ -63,39 +63,40 @@ Type mmpp(objective_function<Type>* obj) {
   // 
   // // Start forward loop
   phi(0,cell(0)) = Type(1.0);
-  // for(int i=1; i<N; i++){
-  // for(int i=1; i<1345; i++){
-  //   if(id(i)!=id(i-1)){
-  //     phi.setZero(); phi(0,cell(i)) = Type(1.0);
-  //   } else{
-  //     //Q = load_Q(from, to,Q_mat.col(period(i)), ns); //mod here for dynamic movement
-  //     L = L_mat.col(period(i));
-  //     QmLd = mat_minus_diag(Q, L) * dt(i);
-  //     G = expm(QmLd);
-  //     v = phi * G;
-  //     v_m.row(i) = v.row(0);
-  //     if(cellNA(i)==0){
-  //       //P.setZero();
-  //       //P(cell(i)) = L(cell(i));
-  //       //v = v.array() * P.array(); //elementwise
-  //       //u = v.sum();
-  //       log_lik += log(v(cell(i))*L(cell(i)));
-  //       phi.setZero(); phi(0,cell(i)) = Type(1);
-  //     } else{phi = v/v.sum();}
-  //   }
-  //   phi_m.row(i) = phi.row(0);
-  // } // end i
+  for(int i=1; i<N; i++){
+    // for(int i=1; i<1345; i++){
+      if(id(i)!=id(i-1)){
+        phi.setZero(); phi(0,cell(i)) = Type(1.0);
+      } else{
+        //Q = load_Q(from, to,Q_mat.col(period(i)), ns); //mod here for dynamic movement
+        L = L_mat.col(period(i));
+        QmLd = mat_minus_diag(Q, L) * dt(i);
+        G = expm(QmLd);
+        v = phi * G;
+        // v_m.row(i) = v.row(0);
+        P.setZero();
+        if(cellNA(i)==0){
+          P(cell(i)) = L(cell(i));
+          v = v.array() * P.array(); //elementwise
+        } 
+        u = v.sum();
+        log_lik_v(i) = log(u);
+        phi = v/u;
+      }
+      // phi_m.row(i) = phi.row(0);
+    } // end i
+    
+    
+    REPORT(Q);
+    REPORT(log_lik_v);
+    
+    
+    
+    return -Type(2)*log_lik_v.sum();
+    
+    
+  }
   
-  
-  REPORT(Q);
-  REPORT(phi_m);
-  
-  
-  
-  return -Type(2)*log_lik;
-  
-  
-}
-
 #undef TMB_OBJECTIVE_PTR
 #define TMB_OBJECTIVE_PTR this
+  
