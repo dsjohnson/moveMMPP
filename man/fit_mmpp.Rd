@@ -8,8 +8,9 @@ fit_mmpp(
   data,
   ddl,
   model_parameters = list(lambda = ~1, q = ~1),
-  fit_model = TRUE,
+  hessian = TRUE,
   start = NULL,
+  method = "nlminb",
   ...
 )
 }
@@ -21,14 +22,16 @@ fit_mmpp(
 \item{model_parameters}{Model formula for the detection and movement portions
 of the MMPP model. Must be of the form \code{list(lambda=~form, q=~form)}.}
 
-\item{fit_model}{Logical. Should the model be fit, or just return the TMB object?
-Defaults to \code{fit_model = TRUE}.}
+\item{hessian}{Logical. Should the Hessian matrix be calculated to obtain the parameter
+variance-covariance matrix.}
 
 \item{start}{Optional starting values for the parameter must be a list of the
 form \code{list(beta_l=c(), beta_q=c())}.}
 
+\item{method}{Optimization method. See \code{\link[optimx]{optimr}}}
+
 \item{...}{Additional arguments passed to the optimization function
-\code{\link[optimx]{opm}} from the \code{\link[optimx]{optimx-package}}.}
+\code{\link[optimx]{optimr}} from the \code{\link[optimx]{optimx-package}}.}
 }
 \description{
 Fit MMPP movement model to resight data

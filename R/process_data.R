@@ -25,7 +25,7 @@ process_data <- function(data, aug_timestamp, time_unit="days"){
     max_seq <- lubridate::ceiling_date(max_dt,t_int[unit_idx])
     aug_times <- seq(min_seq, max_seq, by = aug_timestamp)
   } else if(length(aug_timestamp)>1 & any(class(aug_times)%in%c("POSIXct","POSIXt"))){
-    aug_times <- aug_timestamp[aug_timestamp>=min_dt & aug_timestamp<=max_dt]
+    aug_times <- c(min_dt, aug_timestamp[aug_timestamp>min_dt & aug_timestamp<max_dt], max_dt)
   }
   aug_df <- data.frame(timestamp=aug_times, period=1:length(aug_times), quad=1)
   # %>% mutate(start = timestamp, end = c(tail(timestamp,-1),NA))
@@ -60,6 +60,8 @@ process_data <- function(data, aug_timestamp, time_unit="days"){
       elapse = time-min(time),
       delta = c(NA, diff(elapse))
     ) %>% ungroup()
+  
+  # out$period <- ifelse(is.na(out$cell), out$period-1, out$period)
   
 return(out)
 }
