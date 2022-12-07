@@ -11,6 +11,8 @@ fit_mmpp(
   hessian = TRUE,
   start = NULL,
   method = "nlminb",
+  fit = TRUE,
+  debug = 0,
   ...
 )
 }
@@ -29,6 +31,11 @@ variance-covariance matrix.}
 form \code{list(beta_l=c(), beta_q=c())}.}
 
 \item{method}{Optimization method. See \code{\link[optimx]{optimr}}}
+
+\item{fit}{Logical. Should the liekihood be optimized?}
+
+\item{debug}{Integer from 1-5. Opens browser() at various points in the function call. Mostly for
+package developers.}
 
 \item{...}{Additional arguments passed to the optimization function
 \code{\link[optimx]{optimr}} from the \code{\link[optimx]{optimx-package}}.}
