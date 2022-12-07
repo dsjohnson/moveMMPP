@@ -11,14 +11,14 @@
 #' @param ... Additional arguments passed to the optimization function 
 #' \code{\link[optimx]{optimr}} from the \code{\link[optimx]{optimx-package}}.
 #' @author Devin S. Johnson
-#' @import optimx dplyr numDeriv
+#' @import optimx dplyr numDeriv TMB
 #' @export
 fit_mmpp <- function(data, ddl, 
                      model_parameters=list(lambda=~1, q=~1), hessian=TRUE,
                      start=NULL, method="nlminb", ...
 ){
   
-  cell <- cellx <- NULL
+  cell <- cellx <- fix <- NULL
   
   cell_idx_df <- select(ddl$lambda, cell, cellx) %>% distinct()
   data <- data %>% left_join(cell_idx_df, by="cell")

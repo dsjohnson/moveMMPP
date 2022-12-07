@@ -1,8 +1,8 @@
 #' @title Evaluate movement MMPP log-likelihood
 #' @param par Parameter vector
 #' @param data_list List of required data objects to evaluate likelihood
+#' @param ... Extra wiggle room for ignored arguments.
 #' @author Devin S. Johnson
-#' @import numDeriv
 #' @export
 mmpp_ll <- function(par, data_list,...){
 from_to_q <- t(cbind(data_list$from, data_list$to))

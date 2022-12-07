@@ -7,6 +7,7 @@
 NULL
 
 #' @rdname dm_matrix
+#' @importFrom stats model.frame model.matrix sd 
 #' @export
 dm_lambda <- function(formula, ddl){
   X <- model.matrix(formula, ddl$lambda)

@@ -10,6 +10,8 @@ mmpp_ll(par, data_list, ...)
 \item{par}{Parameter vector}
 
 \item{data_list}{List of required data objects to evaluate likelihood}
+
+\item{...}{Extra wiggle room for ignored arguments.}
 }
 \description{
 Evaluate movement MMPP log-likelihood
