@@ -7,7 +7,8 @@
 fit_mmpp(
   data,
   ddl,
-  model_parameters = list(lambda = ~1, q = ~1),
+  model_parameters = list(lambda = list(form = ~1, offset = ~NULL), q = list(form = ~1,
+    offset = ~log(1/num_neigh) - 1)),
   hessian = TRUE,
   start = NULL,
   method = "nlminb",
@@ -22,7 +23,10 @@ fit_mmpp(
 \item{ddl}{A design data list produced by the function \code{\link{make_design_data}}.}
 
 \item{model_parameters}{Model formula for the detection and movement portions
-of the MMPP model. Must be of the form \code{list(lambda=~form, q=~form)}.}
+of the MMPP model. Must be of the form, e.g.,
+\code{list(lambda=list(form=~1, offset=NULL), q=list(form=~1, offset=~log(1.num_neigh)))}. For the
+\code{q} model you must use \code{offset=0} to not have one. If it is left off, \code{offset=~log(1.num_neigh)))}
+will be used.}
 
 \item{hessian}{Logical. Should the Hessian matrix be calculated to obtain the parameter
 variance-covariance matrix.}
@@ -32,9 +36,9 @@ form \code{list(beta_l=c(), beta_q=c())}.}
 
 \item{method}{Optimization method. See \code{\link[optimx]{optimr}}}
 
-\item{fit}{Logical. Should the liekihood be optimized?}
+\item{fit}{Logical. Should the likelihood be optimized?}
 
-\item{debug}{Integer from 1-5. Opens browser() at various points in the function call. Mostly for
+\item{debug}{Integer from 1-4. Opens browser() at various points in the function call. Mostly for
 package developers.}
 
 \item{...}{Additional arguments passed to the optimization function

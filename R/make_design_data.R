@@ -3,16 +3,20 @@
 #' @param cell_data ---.
 #' @param add_fix ---.
 #' @param add_boundary_length Logical. ---. Defaults to \code{FALSE}.
+#' @param debug Debugging level: 1-3 mainly for package developers.
+#' @param ... Ignored arguments.
 #' @import dplyr sf
 #' @importFrom spdep poly2nb
 #' @importFrom rmapshaper ms_innerlines
 #' @importFrom units set_units
 #' @export
 make_design_data <- function(sighting_data, cell_data, add_fix=TRUE, 
-                             add_boundary_length=FALSE){
+                             add_boundary_length=FALSE, debug=0,...){
   
   cell <- cellx <- timestamp <- quad <- period <- fix <- from_cellx <- NULL
   neighborhood <- to_cellx <- boundary <- NULL
+  
+  if(debug==1) browser()
   
   obs_cells <- unique(sighting_data$cell)
   obs_cells <- obs_cells[!is.na(obs_cells)]
@@ -37,20 +41,24 @@ make_design_data <- function(sighting_data, cell_data, add_fix=TRUE,
   covs <- cell_data %>% st_drop_geometry()
   lambda_data <- left_join(lambda_data, covs, by = c("cell", "cellx"))
   
-  
+
   ### Create Q matrix data frame
+  if(debug==2) browser()
+  
   nb <- spdep::poly2nb(cell_data, queen=FALSE)
   q_data <- cell_data %>% select(cellx) %>% st_drop_geometry() %>% rename(from_cellx = cellx) %>%
     rowwise() %>%
     mutate(
       neighborhood = list(
-        tibble(to_cellx = nb[[from_cellx]])
+        tibble(to_cellx = nb[[from_cellx]], num_neigh=length(nb[[from_cellx]]))
       )
     ) %>% ungroup() %>% arrange(from_cellx) %>% unnest(cols=neighborhood) 
+  
   q_data <- q_data %>% mutate(
     from_area = st_area(cell_data[from_cellx,]) %>% set_units("km^2"),
     to_area = st_area(cell_data[to_cellx,]) %>% set_units("km^2")
   ) %>% arrange(from_cellx, to_cellx)
+  
   if(add_boundary_length){
     q_data <- q_data %>% rowwise() %>%
       mutate(
@@ -80,6 +88,8 @@ make_design_data <- function(sighting_data, cell_data, add_fix=TRUE,
     quad_pts = quad_data,
     obs_cell = obs_cell
   )
+  
+  if(debug==3) browser()
   
   return(out)
   

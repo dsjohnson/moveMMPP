@@ -19,11 +19,12 @@ arma::mat phi_exp_G(const arma::mat& v, const arma::sp_mat&  G,
 
 // [[Rcpp::export]]
 arma::sp_mat load_Q(const arma::umat& from_to, const arma::vec& idx_q, 
-                    const arma::vec& qvals, const int& ns){
+                    const arma::vec& Xb_q, const arma::vec& off_q, 
+                    const int& ns){
   int n = from_to.n_cols;
-  arma::vec qext(n); 
-  for(int i=0; i<n; i++){qext(i) = qvals(idx_q(i));}
-  arma::sp_mat Q(from_to, qext, ns, ns);
+  arma::vec qvals(n); 
+  for(int i=0; i<n; i++){qvals(i) = exp(off_q(i) + Xb_q(idx_q(i)));}
+  arma::sp_mat Q(from_to, qvals, ns, ns);
   //arma::colvec ones(ns,fill::ones);
   arma::colvec row_sums = Q * ones(ns);
   Q.diag() = -1.0*row_sums;
@@ -33,12 +34,14 @@ arma::sp_mat load_Q(const arma::umat& from_to, const arma::vec& idx_q,
 // [[Rcpp::export]]
 arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l, 
                  const arma::vec& idx_l,
-                 const arma::vec& fix_l, const arma::vec& l_vals, const int& ns, 
+                 const arma::vec& fix_l, const arma::vec& Xb_l, 
+                 const arma::vec& off_l, const int& ns, 
                  const int& np){
   arma::mat L_mat(ns,np);
   int n = period_l.size();
   for(int i=0; i<n; i++){
-    if(!R_finite(fix_l(i))){L_mat(cell_l(i), period_l(i)) = l_vals(idx_l(i));
+    if(!R_finite(fix_l(i))){
+      L_mat(cell_l(i), period_l(i)) = exp(off_l(i) + Xb_l(idx_l(i)));
     } else{
       L_mat(cell_l(i), period_l(i)) = fix_l(i);
     }
@@ -53,24 +56,29 @@ arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l,
 Rcpp::List mmpp_arma(const arma::vec& id, const  arma::vec& period, 
                      const arma::vec& dt, const arma::vec& cell, 
                      const int& ns, const int& np, 
-                     const arma::mat& X_l, const arma::vec& fix_l, 
+                     const arma::mat& X_l, const arma::vec& off_l,
+                     const arma::vec& fix_l, 
                      const arma::vec& period_l, const arma::vec& cell_l, 
                      const arma::vec& idx_l, 
                      const arma::vec& beta_l,
                      const arma::umat& from_to_q, const arma::mat& X_q, 
+                     const arma::vec& off_q,
                      const arma::vec& idx_q, const arma::vec& beta_q)
 {
   int N = cell.size();
   
-  arma::vec q_vals = exp(X_q * beta_q);
-  arma::vec l_vals = exp(X_l * beta_l);
+  arma::vec Xb_q = X_q * beta_q;
+  arma::vec Xb_l = X_l * beta_l;
+  
+  // arma::vec q_vals = exp();
+  // arma::vec l_vals = exp();
 
   double u = 0.0;
   arma::vec log_lik_v(N, fill::zeros);
   
-  arma::sp_mat Q = load_Q(from_to_q, idx_q, q_vals, ns);
+  arma::sp_mat Q = load_Q(from_to_q, idx_q, Xb_q, off_q, ns);
   arma::sp_mat G(ns,ns);
-  arma::mat L_mat = load_L(period_l, cell_l, idx_l, fix_l, l_vals, ns, np);
+  arma::mat L_mat = load_L(period_l, cell_l, idx_l, fix_l, Xb_l, off_l, ns, np);
   // Start forward loop
   arma::rowvec v(ns);
   arma::rowvec phi(ns);

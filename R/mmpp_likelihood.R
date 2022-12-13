@@ -17,6 +17,7 @@ mmpp_arma(
   data_list$ns, 
   data_list$np, 
   data_list$X_l, 
+  data_list$off_l,
   data_list$fix_l, 
   data_list$period_l, 
   data_list$cell_l, 
@@ -24,6 +25,7 @@ mmpp_arma(
   beta_l, 
   from_to_q, 
   data_list$X_q, 
+  data_list$off_q,
   data_list$idx_q, 
   beta_q
   )$n2ll

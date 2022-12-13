@@ -1,4 +1,4 @@
-#' @rawNamespace useDynLib(moveMMPP, .registration=TRUE); useDynLib(moveMMPP_TMBExports)
+#' @rawNamespace useDynLib(moveMMPP, .registration=TRUE)
 #' @keywords internal
 "_PACKAGE"
 

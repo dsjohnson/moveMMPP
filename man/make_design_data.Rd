@@ -8,7 +8,9 @@ make_design_data(
   sighting_data,
   cell_data,
   add_fix = TRUE,
-  add_boundary_length = FALSE
+  add_boundary_length = FALSE,
+  debug = 0,
+  ...
 )
 }
 \arguments{
@@ -19,6 +21,10 @@ make_design_data(
 \item{add_fix}{---.}
 
 \item{add_boundary_length}{Logical. ---. Defaults to \code{FALSE}.}
+
+\item{debug}{Debugging level: 1-3 mainly for package developers.}
+
+\item{...}{Ignored arguments.}
 }
 \description{
 Produce design data for use in fitting MMPP movement models

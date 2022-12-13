@@ -2,24 +2,30 @@
 #' @param data A processed data frame produced by the function \code{\link{process_data}}
 #' @param ddl A design data list produced by the function \code{\link{make_design_data}}.
 #' @param model_parameters Model formula for the detection and movement portions
-#' of the MMPP model. Must be of the form \code{list(lambda=~form, q=~form)}.
+#' of the MMPP model. Must be of the form, e.g., 
+#'  \code{list(lambda=list(form=~1, offset=NULL), q=list(form=~1, offset=~log(1.num_neigh)))}. For the 
+#'  \code{q} model you must use \code{offset=0} to not have one. If it is left off, \code{offset=~log(1.num_neigh)))}
+#'  will be used. 
 #' @param hessian Logical. Should the Hessian matrix be calculated to obtain the parameter
 #' variance-covariance matrix.
 #' @param start Optional starting values for the parameter must be a list of the 
 #' form \code{list(beta_l=c(), beta_q=c())}.
 #' @param method Optimization method. See \code{\link[optimx]{optimr}}
-#' @param fit Logical. Should the liekihood be optimized?
-#' @param debug Integer from 1-5. Opens browser() at various points in the function call. Mostly for 
+#' @param fit Logical. Should the likelihood be optimized?
+#' @param debug Integer from 1-4. Opens browser() at various points in the function call. Mostly for 
 #' package developers. 
 #' @param ... Additional arguments passed to the optimization function 
 #' \code{\link[optimx]{optimr}} from the \code{\link[optimx]{optimx-package}}.
 #' @author Devin S. Johnson
-#' @import optimx dplyr numDeriv TMB
+#' @import optimx dplyr numDeriv
 #' @export
 fit_mmpp <- function(data, ddl, 
-                     model_parameters=list(lambda=~1, q=~1), hessian=TRUE,
-                     start=NULL, method="nlminb", fit=TRUE, debug=0, ...
-){
+                     model_parameters = list(
+                       lambda = list(form=~1, offset=~NULL),
+                       q = list(form=~1, offset=~log(1/num_neigh)-1)
+                     ), 
+                     hessian=TRUE, start=NULL, method="nlminb", fit=TRUE, 
+                     debug=0, ...){
   
   cell <- cellx <- fix <- NULL
   
@@ -37,13 +43,14 @@ fit_mmpp <- function(data, ddl,
     N = as.integer(nrow(data)),
     ns = as.integer(length(unique(ddl$lambda$cell))),
     np = as.integer(max(ddl$quad_pts$period)),
-    #detections
+    # detection
     id = data$idx-1,
     period = as.integer(data$period-1),
     dt = data$delta,
     cell = as.integer(data$cellx-1),
     # lambda
     X_l = dml_list$X_l,
+    off_l = dml_list$off_l,
     fix_l = dml_list$idx_l$fix,
     period_l = as.integer(dml_list$idx_l$period-1),
     cell_l = as.integer(dml_list$idx_l$cell-1),
@@ -52,6 +59,7 @@ fit_mmpp <- function(data, ddl,
     from_q = as.integer(dmq_list$idx_q$from_cellx-1),
     to_q = as.integer(dmq_list$idx_q$to_cellx-1),
     X_q = dmq_list$X_q,
+    off_q = dmq_list$off_q,
     idx_q = as.integer(dmq_list$idx_q$idx_q-1)
   )
   
@@ -74,6 +82,8 @@ fit_mmpp <- function(data, ddl,
   #   DLL="moveMMPP_TMBExports"
   # )
   
+  if(debug==2) browser()
+  
   if(fit){
     message('Optimizing likelihood...')  
     if(debug==2) browser()
@@ -90,10 +100,11 @@ fit_mmpp <- function(data, ddl,
       V <- 2*solve(H)
     }
   } else{
-    return(list(data_list=data_list, start=par_list))
+    hessian <- FALSE
+    opt <- list(par=start, objective=mmpp_ll(start, data_list))
   }
   
-  if(debug==4) browser()
+  if(debug==3) browser()
   
   ### Get real lambda values
   X_l <- data_list$X_l
@@ -103,17 +114,20 @@ fit_mmpp <- function(data, ddl,
   l_vals <- exp(X_l %*% beta_l)
   # L <- load_L(data_list$period_l, data_list$cell_l, data_list$idx_l, 
   #                        data_list$fix_l, l_vals, data_list$ns, data_list$np)
-  df_l <- bind_cols(
-    select(ddl$lambda, cell, cellx, period, fix), 
-    model.frame(model_parameters$lambda, ddl$lambda)
+  vars_l <- unique(
+    c(
+      c('cell', 'cellx', 'period', 'fix'), 
+      all.vars(model_parameters$lambda)
+    )
   )
+  df_l <- ddl$lambda[,vars_l]
   df_l$real <- l_vals[data_list$idx_l+1]
   df_l$real <- ifelse(is.na(df_l$real), df_l$fix, df_l$real)
   if(hessian){
     xbVbx_l <- X_l %*% V_l %*% t(X_l)
     se_real_l <- as.vector(l_vals) * sqrt(diag(xbVbx_l)) 
-    ci_lower_l <- exp(X_l %*% beta_l - 1.96*sqrt(diag(V_l)))
-    ci_upper_l <- exp(X_l %*% beta_l + 1.96*sqrt(diag(V_l)))
+    ci_lower_l <- exp(X_l %*% beta_l - 1.96*se_real_l)
+    ci_upper_l <- exp(X_l %*% beta_l + 1.96*se_real_l)
     df_l$se_real <- se_real_l[data_list$idx_l+1]
     df_l$se_real <- ifelse(is.na(df_l$se_real) & !is.na(df_l$fix), 0, df_l$se_real)
     df_l$ci_lower <- ci_lower_l[data_list$idx_l+1]
@@ -138,14 +152,15 @@ fit_mmpp <- function(data, ddl,
   q_vals <- exp(X_q %*% beta_q)
   q_nms <- colnames(X_q)
   # Q <- load_Q(from_to_q, data_list$idx_q, q_vals, data_list$ns)
-  df_q <- model.frame(model_parameters$q, ddl$q)
+  vars_q <- all.vars(model_parameters$q)
+  df_q <- ddl$q[,vars_q]
   df_q$real <- q_vals[data_list$idx_q+1]
   if(hessian){
     xbVbx_q <- X_q %*% V_q %*% t(X_q)
     se_real_q <- as.vector(q_vals) * sqrt(diag(xbVbx_q)) 
     df_q$se_real <- se_real_q[data_list$idx_q+1]
-    ci_lower_q <- exp(X_q %*% beta_q - 1.96*sqrt(diag(V_q)))
-    ci_upper_q <- exp(X_q %*% beta_q + 1.96*sqrt(diag(V_q)))
+    ci_lower_q <- exp(X_q %*% beta_q - 1.96*se_real_q)
+    ci_upper_q <- exp(X_q %*% beta_q + 1.96*se_real_q)
     df_q$ci_lower <- ci_lower_q[data_list$idx_q+1]
     df_q$ci_upper <- ci_upper_q[data_list$idx_q+1]
   }
@@ -169,7 +184,7 @@ fit_mmpp <- function(data, ddl,
   out <- list(
     par = c(beta_l,beta_q),
     vcov = V,
-    log_lik = -0.5*opt$objective,
+    log_lik = -0.5*opt$value,
     results = list(
       beta = list(
         lambda = df_beta_l,
@@ -185,7 +200,7 @@ fit_mmpp <- function(data, ddl,
     data_list=data_list
   )
   
-  if(debug==5) browser()
+  if(debug==4) browser()
   
   return(out)
   
