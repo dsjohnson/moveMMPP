@@ -133,6 +133,11 @@ fit_mmpp <- function(data, ddl,
     df_l$ci_lower <- ci_lower_l[data_list$idx_l+1]
     df_l$ci_upper <- ci_upper_l[data_list$idx_l+1]
   }
+  df_l$prob_det <- ppois(0, df_l$real, lower.tail=FALSE)
+  if(hessian){
+    df_l$ci_det_prob_lower <- ppois(0, df_l$ci_lower, lower.tail=FALSE)
+    df_l$ci_det_prob_upper <- ppois(0, df_l$ci_upper, lower.tail=FALSE)
+  }
   df_l <- dplyr::distinct(df_l)
   
   ### Get beta lambda values
