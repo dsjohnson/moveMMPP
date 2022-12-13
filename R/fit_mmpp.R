@@ -18,6 +18,7 @@
 #' \code{\link[optimx]{optimr}} from the \code{\link[optimx]{optimx-package}}.
 #' @author Devin S. Johnson
 #' @import optimx dplyr numDeriv
+#' @importFrom stats ppois
 #' @export
 fit_mmpp <- function(data, ddl, 
                      model_parameters = list(
