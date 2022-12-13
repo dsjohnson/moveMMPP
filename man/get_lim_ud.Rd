@@ -7,7 +7,7 @@
 get_lim_ud(fit)
 }
 \arguments{
-\item{fit}{A moveMMPP fitted model object from \link[moveMMPP]{\code{fit_mmpp}}.}
+\item{fit}{A moveMMPP fitted model object from \code{\link[moveMMPP]{fit_mmpp}}.}
 }
 \description{
 Get the limiting utilization distribution of the CTMC movement process
