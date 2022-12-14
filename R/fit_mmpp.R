@@ -116,10 +116,10 @@ fit_mmpp <- function(data, ddl,
   # L <- load_L(data_list$period_l, data_list$cell_l, data_list$idx_l, 
   #                        data_list$fix_l, l_vals, data_list$ns, data_list$np)
   vars_l <- unique(
-    c(
+    unique(c(
       c('cell', 'cellx', 'period', 'fix'), 
-      all.vars(model_parameters$lambda)
-    )
+      all.vars(model_parameters$lambda$form)
+    ))
   )
   df_l <- ddl$lambda[,vars_l]
   df_l$real <- l_vals[data_list$idx_l+1]
@@ -158,7 +158,7 @@ fit_mmpp <- function(data, ddl,
   q_vals <- exp(X_q %*% beta_q)
   q_nms <- colnames(X_q)
   # Q <- load_Q(from_to_q, data_list$idx_q, q_vals, data_list$ns)
-  vars_q <- all.vars(model_parameters$q)
+  vars_q <- all.vars(model_parameters$q$form)
   df_q <- ddl$q[,vars_q]
   df_q$real <- q_vals[data_list$idx_q+1]
   if(hessian){
