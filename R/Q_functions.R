@@ -1,5 +1,6 @@
 #' @title Get movement transition matrix from fitted moveMMP object
-#' @param fit A moveMMPP fitted model object from \code{\link[moveMMPP]{fit_mmpp}}.
+#' @param fit A moveMMPP fitted model object from \code{\link[moveMMPP]{fit_mmpp_dir}} or
+#' \code{\link[moveMMPP]{fit_mmpp_wmb}}.
 #' @param sparse Logical. Should the matrix be returned in a sparse format from the \code{Matrix}
 #' package. Defaults to \code{sparse = TRUE}.
 #' @author Devin S. Johnson
@@ -19,7 +20,8 @@ get_Q <- function(fit, sparse=TRUE){
 }
 
 #' @title Get the limiting utilization distribution of the CTMC movement process
-#' @param fit A moveMMPP fitted model object from \code{\link[moveMMPP]{fit_mmpp}}.
+#' @param fit A moveMMPP fitted model object from \code{\link[moveMMPP]{fit_mmpp_dir}} or
+#' \code{\link[moveMMPP]{fit_mmpp_wmb}}.
 #' @author Devin S. Johnson
 #' @export
 #' @importFrom Matrix t
