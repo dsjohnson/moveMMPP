@@ -101,6 +101,7 @@ fit_mmpp_wmb <- function(data, ddl,
   names(opt_list) <- paste0("batch_",1:num_batch)
   
   if(debug==2) browser()
+  
   if(fit){
     for(b in 1:num_batch){
       batch_list <- batch_subset(data_list, b)
@@ -108,7 +109,8 @@ fit_mmpp_wmb <- function(data, ddl,
       if(b>1) start <- colMeans(sapply(opt_list[1:b], function(x)x$par))
       opt <- optimx::optimr(par=start, fn=pen_n2ll, method=method, data_list=batch_list, ...)
       if(opt$convergence==0){
-        H <- numDeriv::hessian(mmpp_ll, opt$par, data_list=data_list)
+        message(paste0('Calculating Hessian for batch ', b, '...'))
+        H <- numDeriv::hessian(pen_n2ll, opt$par, data_list=batch_list)
         V <- 2*solve(H)
       } else{
         V=NULL
@@ -132,7 +134,9 @@ fit_mmpp_wmb <- function(data, ddl,
   
   Vinv <- Reduce("+", lapply(opt_list, function(x) solve(x$V)))
   V <- solve(Vinv)
-  par <- Reduce("+",lapply(opt_list, function(x) Vinv%*%solve(x$V, x$opt$par)))
+  par <- as.vector(Reduce("+",lapply(opt_list, function(x) Vinv%*%solve(x$V, x$opt$par))))
+  
+  if(!fit) V <- NULL
   
   real <- get_reals(par, V, data_list, ddl, model_parameters)
   beta <- get_betas(par, V, data_list)
@@ -153,7 +157,8 @@ fit_mmpp_wmb <- function(data, ddl,
     ),
     opt = opt,
     start=start,
-    data_list=data_list
+    data_list=data_list,
+    penalty_mat = penalty_mat
   )
   
   if(debug==4) browser()

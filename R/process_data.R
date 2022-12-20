@@ -24,8 +24,11 @@ process_data <- function(data, aug_timestamp, time_unit="days"){
     min_seq <- lubridate::floor_date(min_dt,t_int[unit_idx])
     max_seq <- lubridate::ceiling_date(max_dt,t_int[unit_idx])
     aug_times <- seq(min_seq, max_seq, by = aug_timestamp)
-  } else if(length(aug_timestamp)>1 & any(class(aug_times)%in%c("POSIXct","POSIXt"))){
-    aug_times <- c(min_dt, aug_timestamp[aug_timestamp>min_dt & aug_timestamp<max_dt], max_dt)
+  } else if(length(aug_timestamp)>1 & any(class(aug_timestamp)%in%c("POSIXct","POSIXt"))){
+    t_int <- attr(diff(aug_timestamp), "units")
+    min_seq <- lubridate::floor_date(min_dt,t_int)
+    max_seq <- lubridate::ceiling_date(max_dt,t_int)
+    aug_times <- c(min_seq, aug_timestamp[aug_timestamp>min_dt & aug_timestamp<max_dt], max_seq)
   }
   aug_df <- data.frame(timestamp=aug_times, period=1:length(aug_times), quad=1)
   # %>% mutate(start = timestamp, end = c(tail(timestamp,-1),NA))
