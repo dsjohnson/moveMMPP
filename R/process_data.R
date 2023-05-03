@@ -34,9 +34,9 @@ process_data <- function(data, aug_timestamp, time_unit="days"){
   # %>% mutate(start = timestamp, end = c(tail(timestamp,-1),NA))
   data <- data %>% group_by(id) %>% arrange(timestamp) %>% nest() %>% 
     mutate(ns = sapply(data, nrow) %>% as.integer)
-  if(any(data$ns==1)){
-    ns <- sum(data$ns==1)
-    warning(paste0(ns, " Individuals with only 1 sighting have been removed!"))
+  if(any(data$ns<=1)){
+    ns <- sum(data$ns<=1)
+    warning(paste0(ns, " Individuals with <= 1 sighting have been removed!"))
     data <- filter(data, ns>1) 
   }
   out <- NULL

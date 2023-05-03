@@ -93,7 +93,8 @@ fit_mmpp_dir <- function(data, ddl,
     
     if(opt$convergence!=0){
       message("There was a problem with optimization... See output 'optimx' object.")
-      return(list(opt=opt, data_list=data_list))
+      # return(list(opt=opt, data_list=data_list))
+      hessian <- FALSE
     }
     if(hessian){
       message('Calculating Hessian and variance-covariance matrices...')  

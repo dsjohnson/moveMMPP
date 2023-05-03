@@ -106,7 +106,7 @@ fit_mmpp_wmb <- function(data, ddl,
     for(b in 1:num_batch){
       batch_list <- batch_subset(data_list, b)
       message(paste0('Optimizing likelihood for batch ', b, '...'))
-      if(b>1) start <- colMeans(sapply(opt_list[1:b], function(x)x$par))
+      if(b>2) start <- colMeans(sapply(opt_list[1:(b-1)], function(x)x$opt$par))
       opt <- optimx::optimr(par=start, fn=pen_n2ll, method=method, data_list=batch_list, ...)
       if(opt$convergence==0){
         message(paste0('Calculating Hessian for batch ', b, '...'))

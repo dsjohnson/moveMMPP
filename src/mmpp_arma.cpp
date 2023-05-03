@@ -91,7 +91,7 @@ Rcpp::List mmpp_arma(const arma::vec& id, const  arma::vec& period,
     if(id(i)!=id(i-1)){
       phi = 0.0*phi; phi(cell(i)) = 1.0;
     } else{
-  //     // Q = load_Q(from, to,Q_mat.col(period(i)), ns); #mod here for dynamic movement
+      // Q = load_Q(from, to,Q_mat.col(period(i)), ns); #mod here for dynamic movement
       L.diag() = L_mat.col(period(i));
       G = (Q-L)*dt(i);
       v = phi_exp_G(phi, G);
