@@ -17,6 +17,9 @@
 #' form \code{list(beta_l=c(), beta_q=c())}.
 #' @param method Optimization method. See \code{\link[optimx]{optimr}}
 #' @param fit Logical. Should the likelihood be optimized?
+#' @param stop_opt_err Logical. Should the fitting stop (error) if any of the batches failes to converge
+#' in the optimization. Otherwise a warning is thrown. 
+#' @param verbose Messages/warnings for each batch fitting.
 #' @param debug Integer from 1-4. Opens browser() at various points in the function call. Mostly for 
 #' package developers. 
 #' @param ... Additional arguments passed to the optimization function 
@@ -25,7 +28,7 @@
 #' @references Duncan, G. M. (1980). Approximate maximum likelihood estimation 
 #' with data sets that exceed computer limits. 
 #' Journal of Econometrics, 14(2), 257-264.
-#' @import optimx dplyr numDeriv
+#' @import optimx dplyr numDeriv foreach doFuture progressr
 #' @importFrom stats ppois
 #' @importFrom mvnfast dmvn
 #' @export
@@ -37,6 +40,7 @@ fit_mmpp_wmb <- function(data, ddl,
                          ), 
                          batch_data, penalty_mat=NULL, 
                          start=NULL, method="nlminb", fit=TRUE,
+                         stop_opt_err = FALSE, verbose=TRUE, 
                          debug=0, ...){
   
   cell <- cellx <- fix <- NULL
@@ -103,28 +107,30 @@ fit_mmpp_wmb <- function(data, ddl,
   if(debug==2) browser()
   
   if(fit){
-    for(b in 1:num_batch){
+    p <- progressor(num_batch)
+    opt_list <- foreach(b = c(1:num_batch), .options.future = list(seed = TRUE), .errorhandling="pass")%dofuture%{
       batch_list <- batch_subset(data_list, b)
-      message(paste0('Optimizing likelihood for batch ', b, '...'))
-      if(b>2) start <- colMeans(sapply(opt_list[1:(b-1)], function(x)x$opt$par))
-      opt <- optimx::optimr(par=start, fn=pen_n2ll, method=method, data_list=batch_list, ...)
+      if(verbose) message(paste0('Optimizing likelihood for batch ', b, '...'))
+      # if(b>2) start <- rowMeans(sapply(opt_list[1:(b-1)], \(x)x$opt$par))
+      suppressWarnings(opt <- optimx::optimr(par=start, fn=pen_n2ll, method=method, data_list=batch_list, ...))
       if(opt$convergence==0){
-        message(paste0('Calculating Hessian for batch ', b, '...'))
+        if(verbose) message(paste0('Calculating Hessian for batch ', b, '...'))
         H <- numDeriv::hessian(pen_n2ll, opt$par, data_list=batch_list)
-        V <- 2*solve(H)
+        # V <- 2*solve(H)
       } else{
-        V=NULL
+        H <- matrix(0, length(start), length(start))
       }
-      opt_list[[b]] <- list(opt=opt, V=V)
+      p()
+      list(opt=opt, H=H/2)
     }
     
     if(any(sapply(opt_list, function(x) x$convergence)!=0)){
-      stop("There were fitting/optimization errors! See returned 'optimr' list.") 
+      warning("There were fitting/optimization errors! Results may be unreliable. See returned 'optimr' list.") 
     }
   } else{
     for(b in 1:num_batch){
       opt <- list(par=start)
-      opt_list[[b]] <- list(opt=opt, V=diag(length(start)))
+      opt_list[[b]] <- list(opt=opt, H=diag(length(start)))
     }
   }
   
@@ -132,9 +138,9 @@ fit_mmpp_wmb <- function(data, ddl,
   
   message("Formatting output...")
   
-  Vinv <- Reduce("+", lapply(opt_list, function(x) solve(x$V)))
+  Vinv <- Reduce("+", lapply(opt_list, \(x) x$H))
   V <- solve(Vinv)
-  par <- as.vector(Reduce("+",lapply(opt_list, function(x) Vinv%*%solve(x$V, x$opt$par))))
+  par <- as.vector(Reduce("+",lapply(opt_list, function(x) Vinv%*%(x$H %*% x$opt$par))))
   
   if(!fit) V <- NULL
   
@@ -143,7 +149,7 @@ fit_mmpp_wmb <- function(data, ddl,
   
   opt <- list(
     par = par,
-    value = mmpp_ll(par, data_list) - 2*dmvn(par, rep(0,length(par)), cP, log=TRUE, isChol=TRUE),
+    value = mmpp_ll(par, data_list) -2*ln_pen(par),
     opt_list=opt_list
   )
   

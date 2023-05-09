@@ -14,6 +14,8 @@ fit_mmpp_wmb(
   start = NULL,
   method = "nlminb",
   fit = TRUE,
+  stop_opt_err = FALSE,
+  verbose = TRUE,
   debug = 0,
   ...
 )
@@ -44,6 +46,11 @@ form \code{list(beta_l=c(), beta_q=c())}.}
 \item{method}{Optimization method. See \code{\link[optimx]{optimr}}}
 
 \item{fit}{Logical. Should the likelihood be optimized?}
+
+\item{stop_opt_err}{Logical. Should the fitting stop (error) if any of the batches failes to converge
+in the optimization. Otherwise a warning is thrown.}
+
+\item{verbose}{Messages/warnings for each batch fitting.}
 
 \item{debug}{Integer from 1-4. Opens browser() at various points in the function call. Mostly for
 package developers.}
