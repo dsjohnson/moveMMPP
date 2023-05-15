@@ -107,6 +107,8 @@ fit_mmpp_wmb <- function(data, ddl,
   if(debug==2) browser()
   
   if(fit){
+    handlers(global=TRUE)
+    message("Beginning batch fits ...")
     p <- progressor(num_batch)
     opt_list <- foreach(b = c(1:num_batch), .options.future = list(seed = TRUE), .errorhandling="pass")%dofuture%{
       batch_list <- batch_subset(data_list, b)
@@ -115,16 +117,17 @@ fit_mmpp_wmb <- function(data, ddl,
       suppressWarnings(opt <- optimx::optimr(par=start, fn=pen_n2ll, method=method, data_list=batch_list, ...))
       if(opt$convergence==0){
         if(verbose) message(paste0('Calculating Hessian for batch ', b, '...'))
-        H <- numDeriv::hessian(pen_n2ll, opt$par, data_list=batch_list)
+        H <- numDeriv::hessian(pen_n2ll, opt$par, data_list=batch_list)/2
         # V <- 2*solve(H)
       } else{
         H <- matrix(0, length(start), length(start))
       }
       p()
-      list(opt=opt, H=H/2)
+      list(opt=opt, H=H)
     }
+    cat("\n")
     
-    if(any(sapply(opt_list, function(x) x$convergence)!=0)){
+    if(any(sapply(opt_list, \(x) x$opt$convergence!=0))){
       warning("There were fitting/optimization errors! Results may be unreliable. See returned 'optimr' list.") 
     }
   } else{
@@ -138,9 +141,8 @@ fit_mmpp_wmb <- function(data, ddl,
   
   message("Formatting output...")
   
-  Vinv <- Reduce("+", lapply(opt_list, \(x) x$H))
-  V <- solve(Vinv)
-  par <- as.vector(Reduce("+",lapply(opt_list, function(x) Vinv%*%(x$H %*% x$opt$par))))
+  V <- Reduce("+", lapply(opt_list, \(x) x$H)) |> solve()
+  par <- as.vector(Reduce("+",lapply(opt_list, \(x) V%*%(x$H %*% x$opt$par))))
   
   if(!fit) V <- NULL
   
@@ -153,6 +155,12 @@ fit_mmpp_wmb <- function(data, ddl,
     opt_list=opt_list
   )
   
+  par_mat <- t(sapply(opt_list, \(x) x$opt$par))
+  colnames(par_mat) <- c(colnames(data_list$X_l), colnames(data_list$X_q))
+  
+  Vinv_list <- lapply(opt_list, \(x) x$H)
+  names(Vinv_list) <- paste0("batch_", c(1:length(Vinv_list)))
+  
   out <- list(
     par = par,
     vcov = V,
@@ -164,7 +172,10 @@ fit_mmpp_wmb <- function(data, ddl,
     opt = opt,
     start=start,
     data_list=data_list,
-    penalty_mat = penalty_mat
+    penalty_mat = penalty_mat,
+    par_mat = t(sapply(opt_list, \(x) x$opt$par)),
+    Vinv_list = lapply(opt_list, \(x) x$H),
+    convergence = sapply(opt_list, \(x) x$opt$convergence==0)
   )
   
   if(debug==4) browser()

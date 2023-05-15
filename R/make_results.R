@@ -1,3 +1,15 @@
+#' @title Derive real parameter values
+#' @description Takes fitted model and data object and produces estiates of the 
+#' real parameter values, i.e., movement and detection rates
+#' @param par Model estimated parameters
+#' @param V Optional variance-covariance matrix for the parameters. If none is given
+#' no standard errors will be provided for the real parameter estimates
+#' @param data_list The data list from a fitted model object
+#' @param ddl The design data list fed into a `fit_mmpp` function.
+#' @param model_parameters The model formula for the fitted model.
+#' @author Devin S. Johnson
+#' @export
+
 get_reals <- function(par, V=NULL, data_list, ddl, model_parameters){
   have_V <- !is.null(V)
   
@@ -60,6 +72,14 @@ get_reals <- function(par, V=NULL, data_list, ddl, model_parameters){
 }
 
 
+#' @title Summarize beta parameter values
+#' @description Takes fitted model and produces a summary of the beta estimates. 
+#' @param par Model estimated parameters
+#' @param V Optional variance-covariance matrix for the parameters. If none is given
+#' no standard errors will be provided for the real parameter estimates
+#' @param data_list The data list from a fitted model object
+#' @author Devin S. Johnson
+#' @export
 
 get_betas <- function(par, V=NULL, data_list){
   have_V <- !is.null(V)
