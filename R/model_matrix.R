@@ -19,14 +19,14 @@ dm_lambda <- function(par_list, ddl){
     if(ncol(offset)>1) stop("Lambda offset formula must result in model.matrix of only 1 column.")
     offset = as.vector(offset)
   }
-  rX <- X[is.na(ddl$lambda$fix),]
+  rX <- X[is.na(ddl$lambda$fix),,drop=FALSE]
   keep_col <- !((colMeans(rX)!=1) & (apply(rX, 2, sd)==0))
-  X <- X[,keep_col]
+  X <- X[,keep_col,drop=FALSE]
   ### This section returns a reduce model matrix with only unique rows and 
   ### a lookup index. Right now this seems hard to rearrange and set up in 
   ### the TMB code. So, saving for later. 
   uX <- unique(X)
-  uX <- uX[rowSums(uX)!=0,]
+  uX <- uX[rowSums(uX)!=0,,drop=FALSE]
   dX <- data.frame(cbind(period=ddl$lambda$period, cellx=ddl$lambda$cellx, X))
   duX <- data.frame(cbind(idx_l=1:nrow(uX), uX))
   mX <- merge(dX, duX, all=TRUE)
@@ -41,7 +41,7 @@ dm_lambda <- function(par_list, ddl){
 dm_q <- function(par_list, ddl){
   X <- model.matrix(par_list$form, ddl$q)
   if(is.null(par_list$offset)){
-    par_list$offset <- ~log(1/num_neigh)-1
+    par_list$offset <- ~0 + log(1/num_neigh)
     offset = model.matrix(par_list$offset, ddl$q)
     offset = as.vector(offset)
   } else if(par_list$offset==0){
@@ -53,9 +53,9 @@ dm_q <- function(par_list, ddl){
     offset = ifelse(is.na(offset), 0, offset)
   }
   keep_col <- !((colMeans(X)!=1) & (apply(X, 2, sd)==0))
-  X <- X[,keep_col]
+  X <- X[,keep_col,drop=FALSE]
   uX <- unique(X)
-  uX <- uX[rowSums(uX)!=0,]
+  uX <- uX[rowSums(uX)!=0,,drop=FALSE]
   dX <- data.frame(cbind(from_cellx=ddl$q$from_cellx, to_cellx=ddl$q$to_cellx, X))
   duX <- data.frame(cbind(idx_q=1:nrow(uX), uX))
   mX <- merge(dX, duX)

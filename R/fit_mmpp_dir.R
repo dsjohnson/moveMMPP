@@ -95,14 +95,19 @@ fit_mmpp_dir <- function(data, ddl,
       message("There was a problem with optimization... See output 'optimx' object.")
       # return(list(opt=opt, data_list=data_list))
       hessian <- FALSE
+      V <- NULL
     }
     if(hessian){
       message('Calculating Hessian and variance-covariance matrices...')  
       H <- numDeriv::hessian(mmpp_ll, opt$par, data_list=data_list)
       V <- 2*solve(H)
+    } else{
+      V <- NULL
+      H <- NULL 
     }
   } else{
     hessian <- FALSE
+    V <- NULL
     opt <- list(par=start, objective=mmpp_ll(start, data_list))
   }
   
@@ -196,6 +201,7 @@ fit_mmpp_dir <- function(data, ddl,
     par = par,
     vcov = V,
     log_lik = -0.5*opt$value,
+    aic = opt$value + 2*length(par),
     results = list(
       # beta = list(
       #   lambda = df_beta_l,
