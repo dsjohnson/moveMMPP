@@ -39,6 +39,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// load_Q_hp
+arma::sp_mat load_Q_hp(const arma::umat& from_to, const arma::vec& idx_q_r, const arma::vec& idx_q_m, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const arma::vec& off_q, const int& ns);
+RcppExport SEXP _moveMMPP_load_Q_hp(SEXP from_toSEXP, SEXP idx_q_rSEXP, SEXP idx_q_mSEXP, SEXP Xb_q_rSEXP, SEXP Xb_q_mSEXP, SEXP off_qSEXP, SEXP nsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::umat& >::type from_to(from_toSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type idx_q_r(idx_q_rSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type idx_q_m(idx_q_mSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type Xb_q_r(Xb_q_rSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type Xb_q_m(Xb_q_mSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type off_q(off_qSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ns(nsSEXP);
+    rcpp_result_gen = Rcpp::wrap(load_Q_hp(from_to, idx_q_r, idx_q_m, Xb_q_r, Xb_q_m, off_q, ns));
+    return rcpp_result_gen;
+END_RCPP
+}
 // load_L
 arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l, const arma::vec& idx_l, const arma::vec& fix_l, const arma::vec& Xb_l, const arma::vec& off_l, const int& ns, const int& np);
 RcppExport SEXP _moveMMPP_load_L(SEXP period_lSEXP, SEXP cell_lSEXP, SEXP idx_lSEXP, SEXP fix_lSEXP, SEXP Xb_lSEXP, SEXP off_lSEXP, SEXP nsSEXP, SEXP npSEXP) {
@@ -89,6 +106,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_moveMMPP_phi_exp_G", (DL_FUNC) &_moveMMPP_phi_exp_G, 3},
     {"_moveMMPP_load_Q", (DL_FUNC) &_moveMMPP_load_Q, 5},
+    {"_moveMMPP_load_Q_hp", (DL_FUNC) &_moveMMPP_load_Q_hp, 7},
     {"_moveMMPP_load_L", (DL_FUNC) &_moveMMPP_load_L, 8},
     {"_moveMMPP_mmpp_arma", (DL_FUNC) &_moveMMPP_mmpp_arma, 18},
     {NULL, NULL, 0}

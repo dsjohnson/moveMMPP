@@ -9,6 +9,10 @@ load_Q <- function(from_to, idx_q, Xb_q, off_q, ns) {
     .Call(`_moveMMPP_load_Q`, from_to, idx_q, Xb_q, off_q, ns)
 }
 
+load_Q_hp <- function(from_to, idx_q_r, idx_q_m, Xb_q_r, Xb_q_m, off_q, ns) {
+    .Call(`_moveMMPP_load_Q_hp`, from_to, idx_q_r, idx_q_m, Xb_q_r, Xb_q_m, off_q, ns)
+}
+
 load_L <- function(period_l, cell_l, idx_l, fix_l, Xb_l, off_l, ns, np) {
     .Call(`_moveMMPP_load_L`, period_l, cell_l, idx_l, fix_l, Xb_l, off_l, ns, np)
 }
