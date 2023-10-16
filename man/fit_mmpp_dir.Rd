@@ -36,10 +36,7 @@ fit_mmpp_dir(
 \item{ddl}{A design data list produced by the function \code{\link{make_design_data}}.}
 
 \item{model_parameters}{Model formula for the detection and movement portions
-of the MMPP model. Must be of the form, e.g.,
-\code{list(lambda=list(form=~1, offset=NULL), q=list(form=~1, offset=~log(1.num_neigh)))}. For the
-\code{q} model you must use \code{offset=0} to not have one. If it is left off, \code{offset=~log(1.num_neigh)))}
-will be used.}
+of the MMPP model.}
 
 \item{hessian}{Logical. Should the Hessian matrix be calculated to obtain the parameter
 variance-covariance matrix.}
@@ -61,6 +58,15 @@ package developers.}
 Fit MMPP movement model to resight data
 
 Fit MMPP movement model to resight data
+}
+\details{
+Two model forms are available \code{list(lambda=list(form=~1, offset=NULL), q=list(form=~1, offset=~log(1.num_neigh)))}. For the
+\code{q} model you must use \code{offset=0} to not have one. If it is left off, \code{offset=~log(1.num_neigh)))}
+will be used. To use the movement rate form of Hewitt et al. (2023), one must use, e.g.,
+\code{q = list(res_form = ~from_var, mov_form=~to_var, offset=...)}, where \code{from_var} is a variable
+}
+\references{
+Hewitt, J., Gelfand, A. E., & Schick, R. S. (2023). Time-discretization approximation enriches continuous-time discrete-space models for animal movement. The Annals of Applied Statistics, 17:740-760.
 }
 \author{
 Devin S. Johnson

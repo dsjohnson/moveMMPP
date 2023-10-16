@@ -23,22 +23,22 @@ Rcpp::List mmpp_arma(const arma::vec& id, const  arma::vec& period,
                      const arma::vec& period_l, const arma::vec& cell_l, 
                      const arma::vec& idx_l, 
                      const arma::vec& beta_l,
-                     const arma::umat& from_to_q, const arma::mat& X_q, 
+                     const arma::umat& from_to_q, const arma::mat& X_q_r, 
+                     const arma::mat& X_q_m,
                      const arma::vec& off_q,
-                     const arma::vec& idx_q, const arma::vec& beta_q)
+                     const arma::vec& idx_q_r, const arma::vec& idx_q_m,
+                     const arma::vec& beta_q_r, const arma::vec& beta_q_m)
 {
   int N = cell.size();
   
-  arma::vec Xb_q = X_q * beta_q;
+  arma::vec Xb_q_r = X_q_r * beta_q_r;
+  arma::vec Xb_q_m = X_q_r * beta_q_m;
   arma::vec Xb_l = X_l * beta_l;
-  
-  // arma::vec q_vals = exp();
-  // arma::vec l_vals = exp();
 
   double u = 0.0;
   arma::vec log_lik_v(N, fill::zeros);
   
-  arma::sp_mat Q = load_Q(from_to_q, idx_q, Xb_q, off_q, ns);
+  arma::sp_mat Q = load_Q_hp(from_to_q, idx_q_r, idx_q_m, Xb_q_r, Xb_q_m, off_q, ns);
   arma::sp_mat G(ns,ns);
   arma::mat L_mat = load_L(period_l, cell_l, idx_l, fix_l, Xb_l, off_l, ns, np);
   // Start forward loop
