@@ -24,9 +24,9 @@
 #' @importFrom stats ppois
 #' @export
 fit_mmpp_dir <- function(data, ddl, 
-                     model_parameters = list(
-                       lambda = list(form=~1, offset=~NULL),
-                       q = list(form=~1, offset=~log(1/num_neigh)-1)
+                     model_parameters = list(lambda = ~1, q_r = ~1, q_m = ~1
+                       # lambda = list(form=~1, offset=~NULL),
+                       # q = list(form=~1, offset=~log(1/num_neigh)-1)
                      ), 
                      hessian=TRUE, start=NULL, method="nlminb", fit=TRUE, 
                      debug=0, ...){
@@ -38,8 +38,9 @@ fit_mmpp_dir <- function(data, ddl,
   cell_idx_df <- select(ddl$lambda, cell, cellx) %>% distinct()
   data <- data %>% left_join(cell_idx_df, by="cell")
   
-  dml_list <- dm_lambda(model_parameters$lambda, ddl)
-  dmq_list <- dm_q(model_parameters$q, ddl)
+  dml <- dm_lambda(model_parameters$lambda, ddl)
+  dmq_r <- dm_q_r(model_parameters$q_r, ddl)
+  dmq_m <- dm_q_m(model_parameters$q_m, ddl)
   
   data$period <- ifelse(is.na(data$cell), data$period-1, data$period)
   
@@ -52,31 +53,38 @@ fit_mmpp_dir <- function(data, ddl,
     period = as.integer(data$period-1),
     dt = data$delta,
     cell = as.integer(data$cellx-1),
-    # lambda
-    X_l = dml_list$X_l,
-    off_l = dml_list$off_l,
+    ### lambda
+    X_l = dml$X_l,
+    # off_l = dml_list$off_l,
     fix_l = dml_list$idx_l$fix,
     period_l = as.integer(dml_list$idx_l$period-1),
     cell_l = as.integer(dml_list$idx_l$cell-1),
-    idx_l = as.integer(dml_list$idx_l$idx_l-1),
-    # Q
+    # idx_l = as.integer(dml_list$idx_l$idx_l-1),
+    ### Q
     from_q = as.integer(dmq_list$idx_q$from_cellx-1),
     to_q = as.integer(dmq_list$idx_q$to_cellx-1),
-    X_q = dmq_list$X_q,
-    off_q = dmq_list$off_q,
-    idx_q = as.integer(dmq_list$idx_q$idx_q-1)
+    X_q_r = dmq_r$X_q_r,
+    X_q_m = dmq_m$X_q_m,
+    # off_q = dmq_list$off_q,
+    # idx_q = as.integer(dmq_list$idx_q$idx_q-1)
+    par_map = list(
+      beta_l = c(1:ncol(dml_list$X_l)),
+      beta_q_r = c(1:ncol(dml_list$X_q_r)) + ncol(dml_list$X_l),
+      beta_q_m = c(1:ncol(dml_list$X_q_m)) + ncol(dml_list$X_l) + ncol(dml_list$X_q_r)
+    )
   )
   
   if(is.null(start)){
     par_list <- list(
-      beta_l=rep(0,ncol(dml_list$X_l)), 
-      beta_q=rep(0, ncol(dmq_list$X_q))
+      beta_l = rep(0,ncol(dml_list$X_l)), 
+      beta_q_r = rep(0, ncol(dmq_list$X_q_r)),
+      beta_q_m = rep(0, ncol(dmq_list$X_q_m))
     )
   } else{
     par_list=start
   }
   
-  start <- c(par_list$beta_l, par_list$beta_q)
+  start <- c(par_list$beta_l, par_list$beta_q_r, par_list$beta_q_m)
   
   if(debug==2) browser()
   

@@ -11,8 +11,8 @@ get_Q <- function(fit, sparse=TRUE){
   X_q <- dl$X_q
   Xb_q <- X_q%*%beta_q
   from_to_q <- t(cbind(dl$from_q, dl$to_q))
-  idx_q <- dl$idx_q
-  off_q <- dl$off_q
+  # idx_q <- dl$idx_q
+  # off_q <- dl$off_q
   ns <- dl$ns
   Q <- load_Q(from_to_q, idx_q, Xb_q, off_q, ns)
   if(!sparse) Q <- as.matrix(Q)
