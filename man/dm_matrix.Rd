@@ -3,19 +3,19 @@
 \name{dm_matrix}
 \alias{dm_matrix}
 \alias{dm_lambda}
-\alias{dm_q}
+\alias{dm_q_m}
 \title{Create sparse representations of design matrices for
 movement and resight models}
 \usage{
-dm_lambda(par_list, ddl)
+dm_lambda(formula, ddl)
 
-dm_q(par_list, ddl)
+dm_q_m(formula, ddl)
 }
 \arguments{
+\item{ddl}{Design data list}
+
 \item{par_list}{A list with named elements \code{form} ( the model formula) and
 \code{offset} (formula for the offset; must result in a single column from call to \code{model.matrix})}
-
-\item{ddl}{Design data list}
 }
 \description{
 Create sparse representations of design matrices for

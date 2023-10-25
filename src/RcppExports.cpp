@@ -11,6 +11,34 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// phi_exp_lnG
+arma::mat phi_exp_lnG(const arma::mat& phi, const arma::sp_mat& lnG, const double& prec);
+RcppExport SEXP _moveMMPP_phi_exp_lnG(SEXP phiSEXP, SEXP lnGSEXP, SEXP precSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< const arma::sp_mat& >::type lnG(lnGSEXP);
+    Rcpp::traits::input_parameter< const double& >::type prec(precSEXP);
+    rcpp_result_gen = Rcpp::wrap(phi_exp_lnG(phi, lnG, prec));
+    return rcpp_result_gen;
+END_RCPP
+}
+// load_Q
+arma::sp_mat load_Q(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const bool& row_sweep);
+RcppExport SEXP _moveMMPP_load_Q(SEXP from_toSEXP, SEXP Xb_q_rSEXP, SEXP Xb_q_mSEXP, SEXP nsSEXP, SEXP row_sweepSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::umat& >::type from_to(from_toSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type Xb_q_r(Xb_q_rSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type Xb_q_m(Xb_q_mSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ns(nsSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type row_sweep(row_sweepSEXP);
+    rcpp_result_gen = Rcpp::wrap(load_Q(from_to, Xb_q_r, Xb_q_m, ns, row_sweep));
+    return rcpp_result_gen;
+END_RCPP
+}
 // load_L
 arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l, const arma::vec& fix_l, const arma::vec& Xb_l, const int& ns, const int& np);
 RcppExport SEXP _moveMMPP_load_L(SEXP period_lSEXP, SEXP cell_lSEXP, SEXP fix_lSEXP, SEXP Xb_lSEXP, SEXP nsSEXP, SEXP npSEXP) {
@@ -53,6 +81,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_moveMMPP_phi_exp_lnG", (DL_FUNC) &_moveMMPP_phi_exp_lnG, 3},
+    {"_moveMMPP_load_Q", (DL_FUNC) &_moveMMPP_load_Q, 5},
     {"_moveMMPP_load_L", (DL_FUNC) &_moveMMPP_load_L, 6},
     {"_moveMMPP_mmpp_arma", (DL_FUNC) &_moveMMPP_mmpp_arma, 14},
     {NULL, NULL, 0}

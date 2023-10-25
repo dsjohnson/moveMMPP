@@ -28,7 +28,7 @@ X4 <- sp_norm(X3)
 
 
 library(spatstat.sparse)
-n <- 3
+n <- 1000
 X <- gridadjacencymatrix(c(n,n), across = TRUE, down = TRUE, diagonal=FALSE)
 X <- as(X, "TsparseMatrix")
 from_to <- t(cbind(X@i, X@j))
