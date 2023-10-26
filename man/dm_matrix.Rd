@@ -4,12 +4,15 @@
 \alias{dm_matrix}
 \alias{dm_lambda}
 \alias{dm_q_m}
+\alias{dm_q_r}
 \title{Create sparse representations of design matrices for
 movement and resight models}
 \usage{
 dm_lambda(formula, ddl)
 
 dm_q_m(formula, ddl)
+
+dm_q_r(formula, ddl)
 }
 \arguments{
 \item{ddl}{Design data list}

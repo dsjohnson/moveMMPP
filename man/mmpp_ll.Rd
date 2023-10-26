@@ -4,12 +4,14 @@
 \alias{mmpp_ll}
 \title{Evaluate movement MMPP log-likelihood}
 \usage{
-mmpp_ll(par, data_list, ...)
+mmpp_ll(par, data_list, debug = 0, ...)
 }
 \arguments{
 \item{par}{Parameter vector}
 
 \item{data_list}{List of required data objects to evaluate likelihood}
+
+\item{debug}{For developers only, leave in the default setting.}
 
 \item{...}{Extra wiggle room for ignored arguments.}
 }

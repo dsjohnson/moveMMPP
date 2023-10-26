@@ -28,7 +28,7 @@ of the MMPP model.}
 variance-covariance matrix.}
 
 \item{start}{Optional starting values for the parameter must be a list of the
-form \code{list(beta_l=c(), beta_q=c())}.}
+form \code{list(beta_l=c(), beta_q_r=c(), beta_q_r=c())}.}
 
 \item{method}{Optimization method. See \code{\link[optimx]{optimr}}}
 

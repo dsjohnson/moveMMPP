@@ -38,45 +38,46 @@ make_design_data <- function(sighting_data, cell_data, add_fix=TRUE,
     lambda_data <- lambda_data %>% mutate(fix = ifelse(is.na(fix), 0, NA))
   }
   
-  covs <- cell_data %>% st_drop_geometry()
-  lambda_data <- left_join(lambda_data, covs, by = c("cell", "cellx"))
+  q_r_data <- cell_data %>% st_drop_geometry()
+  lambda_data <- left_join(lambda_data, q_r_data, by = c("cell", "cellx"))
   
 
   ### Create Q matrix data frame
   if(debug==2) browser()
   
   nb <- spdep::poly2nb(cell_data, queen=FALSE)
-  q_data <- cell_data %>% select(cellx) %>% st_drop_geometry() %>% rename(from_cellx = cellx) %>%
+  q_m_data <- cell_data %>% select(cellx) %>% st_drop_geometry() %>% rename(from_cellx = cellx) %>%
     rowwise() %>%
     mutate(
       neighborhood = list(
-        tibble(to_cellx = nb[[from_cellx]], num_neigh=length(nb[[from_cellx]]))
+        tibble(cellx = nb[[from_cellx]], num_neigh=length(nb[[from_cellx]]))
       )
     ) %>% ungroup() %>% arrange(from_cellx) %>% unnest(cols=neighborhood) 
   
-  q_data <- q_data %>% mutate(
+  q_m_data <- q_m_data %>% mutate(
     from_area = st_area(cell_data[from_cellx,]) %>% set_units("km^2"),
-    to_area = st_area(cell_data[to_cellx,]) %>% set_units("km^2")
-  ) %>% arrange(from_cellx, to_cellx)
+    area = st_area(cell_data[cellx,]) %>% set_units("km^2")
+  ) %>% arrange(from_cellx, cellx)
   
-  if(add_boundary_length){
-    q_data <- q_data %>% rowwise() %>%
-      mutate(
-        boundary = ms_innerlines(cell_data[c(from_cellx,to_cellx),]),
-        boundary_length = st_length(boundary) %>% set_units("km")
-      ) %>% ungroup() %>% select(-boundary)
-  }
+  if(add_boundary_length) warning("'add_boudary_length' not currently implemented.")
+  # if(add_boundary_length){
+  #   move_data <- move_data %>% rowwise() %>%
+  #     mutate(
+  #       boundary = list(ms_innerlines(cell_data[c(from_cellx,cellx),])),
+  #       boundary_length = st_length(boundary) %>% set_units("km")
+  #     ) %>% ungroup() %>% select(-boundary)
+  # }
   
-  cov_nms <- colnames(covs)
-  colnames(covs) <- paste0("from_",cov_nms)
-  q_data <- left_join(q_data, covs, by="from_cellx")
-  colnames(covs) <- paste0("to_",cov_nms)
-  q_data <- left_join(q_data, covs, by="to_cellx")
+  cov_nms <- colnames(q_r_data)
+  colnames(q_r_data) <- paste0("from_",cov_nms)
+  q_m_data <- left_join(q_m_data, q_r_data, by="from_cellx")
+  colnames(q_r_data) <- cov_nms
+  q_m_data <- left_join(q_m_data, q_r_data, by="cellx")
   
-  q_data$fix <- NA
+  q_m_data$fix <- NA
   
   # if(dynamic_movement){
-  #   # add code here to expand q_data by quad_data if time indexed movement is 
+  #   # add code here to expand move_data by quad_data if time indexed movement is 
   #   # desired.
   # }
   
@@ -84,7 +85,8 @@ make_design_data <- function(sighting_data, cell_data, add_fix=TRUE,
   
   out <- list(
     lambda = lambda_data,
-    q = q_data,
+    q_r = q_r_data,
+    q_m = q_m_data,
     quad_pts = quad_data,
     obs_cell = obs_cell
   )

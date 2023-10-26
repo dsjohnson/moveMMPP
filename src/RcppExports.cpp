@@ -25,8 +25,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // load_Q
-arma::sp_mat load_Q(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const bool& row_sweep);
-RcppExport SEXP _moveMMPP_load_Q(SEXP from_toSEXP, SEXP Xb_q_rSEXP, SEXP Xb_q_mSEXP, SEXP nsSEXP, SEXP row_sweepSEXP) {
+arma::sp_mat load_Q(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const bool& norm);
+RcppExport SEXP _moveMMPP_load_Q(SEXP from_toSEXP, SEXP Xb_q_rSEXP, SEXP Xb_q_mSEXP, SEXP nsSEXP, SEXP normSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,8 +34,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type Xb_q_r(Xb_q_rSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type Xb_q_m(Xb_q_mSEXP);
     Rcpp::traits::input_parameter< const int& >::type ns(nsSEXP);
-    Rcpp::traits::input_parameter< const bool& >::type row_sweep(row_sweepSEXP);
-    rcpp_result_gen = Rcpp::wrap(load_Q(from_to, Xb_q_r, Xb_q_m, ns, row_sweep));
+    Rcpp::traits::input_parameter< const bool& >::type norm(normSEXP);
+    rcpp_result_gen = Rcpp::wrap(load_Q(from_to, Xb_q_r, Xb_q_m, ns, norm));
     return rcpp_result_gen;
 END_RCPP
 }

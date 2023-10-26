@@ -50,15 +50,31 @@ arma::sp_mat sp_exp(const arma::sp_mat& X, const bool& row_sweep = true) {
 
 
 
+// // [[Rcpp::export]]
+// arma::sp_mat load_Q(const arma::umat& from_to,
+//                     const arma::vec& Xb_q_r, const arma::vec& Xb_q_m,
+//                     const int& ns, const bool& row_sweep=true) {
+//   arma::sp_mat Qr(ns,ns);
+//   Qr.diag() = trunc_exp(Xb_q_r);
+//   arma::sp_mat Xb_m_mat(from_to, Xb_q_m, ns, ns);
+//   arma::sp_mat Qm = sp_exp(Xb_m_mat, row_sweep);
+//   Qm = normalise(Qm, 1, 1);
+//   Qm.diag().ones();
+//   Qm.diag() = -1*Qm.diag();
+//   arma::sp_mat Q = Qr * Qm;
+//   return Q;
+// }
+
 // [[Rcpp::export]]
 arma::sp_mat load_Q(const arma::umat& from_to,
                     const arma::vec& Xb_q_r, const arma::vec& Xb_q_m,
-                    const int& ns, const bool& row_sweep=true) {
+                    const int& ns, const bool& norm=true) {
   arma::sp_mat Qr(ns,ns);
   Qr.diag() = trunc_exp(Xb_q_r);
-  arma::sp_mat Xb_m_mat(from_to, Xb_q_m, ns, ns);
-  arma::sp_mat Qm = sp_exp(Xb_m_mat, row_sweep);
-  Qm = normalise(Qm, 1, 1);
+  arma::sp_mat Qm(from_to, trunc_exp(Xb_q_m), ns, ns);
+  if(norm){
+    Qm = normalise(Qm, 1, 1);
+  }
   Qm.diag().ones();
   Qm.diag() = -1*Qm.diag();
   arma::sp_mat Q = Qr * Qm;

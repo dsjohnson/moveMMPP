@@ -6,7 +6,7 @@
 #' @param hessian Logical. Should the Hessian matrix be calculated to obtain the parameter
 #' variance-covariance matrix.
 #' @param start Optional starting values for the parameter must be a list of the 
-#' form \code{list(beta_l=c(), beta_q=c())}.
+#' form \code{list(beta_l=c(), beta_q_r=c(), beta_q_r=c())}.
 #' @param method Optimization method. See \code{\link[optimx]{optimr}}
 #' @param fit Logical. Should the likelihood be optimized?
 #' @param debug Integer from 1-4. Opens browser() at various points in the function call. Mostly for 
@@ -25,8 +25,6 @@
 #' @export
 fit_mmpp_dir <- function(data, ddl, 
                      model_parameters = list(lambda = ~1, q_r = ~1, q_m = ~1
-                       # lambda = list(form=~1, offset=~NULL),
-                       # q = list(form=~1, offset=~log(1/num_neigh)-1)
                      ), 
                      hessian=TRUE, start=NULL, method="nlminb", fit=TRUE, 
                      debug=0, ...){
@@ -35,7 +33,7 @@ fit_mmpp_dir <- function(data, ddl,
   
   if(debug==1) browser()
   
-  cell_idx_df <- select(ddl$lambda, cell, cellx) %>% distinct()
+  cell_idx_df <- select(ddl$q_r, cell, cellx) %>% distinct()
   data <- data %>% left_join(cell_idx_df, by="cell")
   
   dml <- dm_lambda(model_parameters$lambda, ddl)
@@ -44,9 +42,16 @@ fit_mmpp_dir <- function(data, ddl,
   
   data$period <- ifelse(is.na(data$cell), data$period-1, data$period)
   
+  par_map = list(
+    beta_l = c(1:ncol(dml$X_l)),
+    beta_q_r = c(1:ncol(dmq_r$X_q_r)) + ncol(dml$X_l)
+  )
+  if(ncol(dmq_m$X_q_m)!=0) par_map$beta_q_m = c(1:ncol(dmq_m$X_q_m)) + ncol(dmq_r$X_q_r) + ncol(dml$X_l)
+
+  
   data_list <- list(
     N = as.integer(nrow(data)),
-    ns = as.integer(length(unique(ddl$lambda$cell))),
+    ns = as.integer(length(unique(ddl$q_r$cellx))),
     np = as.integer(max(ddl$quad_pts$period)),
     # detection
     id = data$idx-1,
@@ -56,29 +61,25 @@ fit_mmpp_dir <- function(data, ddl,
     ### lambda
     X_l = dml$X_l,
     # off_l = dml_list$off_l,
-    fix_l = dml_list$idx_l$fix,
-    period_l = as.integer(dml_list$idx_l$period-1),
-    cell_l = as.integer(dml_list$idx_l$cell-1),
+    fix_l = ddl$lambda$fix,
+    period_l = as.integer(ddl$lambda$period-1),
+    cell_l = as.integer(ddl$lambda$cellx-1),
     # idx_l = as.integer(dml_list$idx_l$idx_l-1),
     ### Q
-    from_q = as.integer(dmq_list$idx_q$from_cellx-1),
-    to_q = as.integer(dmq_list$idx_q$to_cellx-1),
+    from = as.integer(ddl$q_m$from_cellx-1),
+    to = as.integer(ddl$q_m$cellx-1),
     X_q_r = dmq_r$X_q_r,
     X_q_m = dmq_m$X_q_m,
     # off_q = dmq_list$off_q,
     # idx_q = as.integer(dmq_list$idx_q$idx_q-1)
-    par_map = list(
-      beta_l = c(1:ncol(dml_list$X_l)),
-      beta_q_r = c(1:ncol(dml_list$X_q_r)) + ncol(dml_list$X_l),
-      beta_q_m = c(1:ncol(dml_list$X_q_m)) + ncol(dml_list$X_l) + ncol(dml_list$X_q_r)
-    )
+    par_map = par_map
   )
   
   if(is.null(start)){
     par_list <- list(
-      beta_l = rep(0,ncol(dml_list$X_l)), 
-      beta_q_r = rep(0, ncol(dmq_list$X_q_r)),
-      beta_q_m = rep(0, ncol(dmq_list$X_q_m))
+      beta_l = rep(0,ncol(dml$X_l)), 
+      beta_q_r = rep(0, ncol(dmq_r$X_q_r)),
+      beta_q_m = rep(0, ncol(dmq_m$X_q_m))
     )
   } else{
     par_list=start
@@ -87,6 +88,8 @@ fit_mmpp_dir <- function(data, ddl,
   start <- c(par_list$beta_l, par_list$beta_q_r, par_list$beta_q_m)
   
   if(debug==2) browser()
+  
+  # mmpp_ll(start, data_list, debug=1)
   
   if(fit){
     message('Optimizing likelihood...')  
@@ -118,7 +121,7 @@ fit_mmpp_dir <- function(data, ddl,
   
   ### Get real lambda values
   par <- opt$par
-  real <- get_reals(par, V, data_list, ddl, model_parameters)
+  # real <- get_reals(par, V, data_list, ddl, model_parameters)
   
   ### Get beta lambda values
   beta <- get_betas(par, V, data_list)
@@ -132,8 +135,8 @@ fit_mmpp_dir <- function(data, ddl,
     log_lik = -0.5*opt$value,
     aic = opt$value + 2*length(par),
     results = list(
-      beta = beta,
-      real = real
+      beta = beta#,
+      # real = real
     ),
     opt = opt,
     start=start,

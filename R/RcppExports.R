@@ -5,8 +5,8 @@ phi_exp_lnG <- function(phi, lnG, prec = 1.0e-8) {
     .Call(`_moveMMPP_phi_exp_lnG`, phi, lnG, prec)
 }
 
-load_Q <- function(from_to, Xb_q_r, Xb_q_m, ns, row_sweep = TRUE) {
-    .Call(`_moveMMPP_load_Q`, from_to, Xb_q_r, Xb_q_m, ns, row_sweep)
+load_Q <- function(from_to, Xb_q_r, Xb_q_m, ns, norm = TRUE) {
+    .Call(`_moveMMPP_load_Q`, from_to, Xb_q_r, Xb_q_m, ns, norm)
 }
 
 load_L <- function(period_l, cell_l, fix_l, Xb_l, ns, np) {
