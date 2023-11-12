@@ -32,21 +32,21 @@ arma::mat phi_exp_lnG(const arma::mat& phi, const arma::sp_mat&  lnG, const doub
 // }
 
 
-arma::sp_mat sp_exp(const arma::sp_mat& X, const bool& row_sweep = true) {
-  arma::sp_mat out = X;
-  if(row_sweep){
-    arma::vec mx;
-    mx = arma::max(X, 1);
-    for (arma::sp_mat::const_iterator i = X.begin(); i != X.end(); ++i) {
-      out(i.row(), i.col()) = exp(*i - mx(i.row()));
-    }
-  } else{
-    for (arma::sp_mat::const_iterator i = X.begin(); i != X.end(); ++i) {
-      out(i.row(), i.col()) = exp(*i);
-    }
-  } 
-  return out;
-}
+// arma::sp_mat sp_exp(const arma::sp_mat& X, const bool& row_sweep = true) {
+//   arma::sp_mat out = X;
+//   if(row_sweep){
+//     arma::vec mx;
+//     mx = arma::max(X, 1);
+//     for (arma::sp_mat::const_iterator i = X.begin(); i != X.end(); ++i) {
+//       out(i.row(), i.col()) = exp(*i - mx(i.row()));
+//     }
+//   } else{
+//     for (arma::sp_mat::const_iterator i = X.begin(); i != X.end(); ++i) {
+//       out(i.row(), i.col()) = exp(*i);
+//     }
+//   } 
+//   return out;
+// }
 
 
 
