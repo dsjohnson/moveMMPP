@@ -8,6 +8,7 @@ fit_mmpp_dir(
   data,
   ddl,
   model_parameters = list(lambda = ~1, q_r = ~1, q_m = ~1),
+  pen_fun = NULL,
   hessian = TRUE,
   start = NULL,
   method = "nlminb",
@@ -23,6 +24,8 @@ fit_mmpp_dir(
 
 \item{model_parameters}{Model formula for the detection and movement portions
 of the MMPP model.}
+
+\item{pen_fun}{An optional penalty function. Should be on the scale of a log-prior distribution.}
 
 \item{hessian}{Logical. Should the Hessian matrix be calculated to obtain the parameter
 variance-covariance matrix.}

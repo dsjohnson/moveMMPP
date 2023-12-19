@@ -5,10 +5,9 @@
 \title{Produce design data for use in fitting MMPP movement models}
 \usage{
 make_design_data(
-  sighting_data,
+  sighting_data = NULL,
   cell_data,
-  add_fix = TRUE,
-  add_boundary_length = FALSE,
+  rast_mask = NULL,
   debug = 0,
   ...
 )
@@ -18,9 +17,8 @@ make_design_data(
 
 \item{cell_data}{---.}
 
-\item{add_fix}{---.}
-
-\item{add_boundary_length}{Logical. ---. Defaults to \code{FALSE}.}
+\item{rast_mask}{Raster mask for inaccessible cells when \code{cell_data} is of type \code{SpatRaster} from the \code{terra} package. This is ignored
+if \code{cell_data} is an \code{POLYGON} data frame from the \code{sf} package.}
 
 \item{debug}{Debugging level: 1-3 mainly for package developers.}
 

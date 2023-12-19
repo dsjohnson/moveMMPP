@@ -1,7 +1,6 @@
 #' @title Create sparse representations of design matrices for 
 #' movement and resight models
-#' @param par_list A list with named elements \code{form} ( the model formula) and 
-#' \code{offset} (formula for the offset; must result in a single column from call to \code{model.matrix})
+#' @param formula An \code{R} formula object for the paramter vector.
 #' @param ddl Design data list
 #' @details This function is not designed for end-users but is exported for posterity.
 #' @name dm_matrix

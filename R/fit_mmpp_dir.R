@@ -3,6 +3,7 @@
 #' @param ddl A design data list produced by the function \code{\link{make_design_data}}.
 #' @param model_parameters Model formula for the detection and movement portions
 #' of the MMPP model. 
+#' @param pen_fun An optional penalty function. Should be on the scale of a log-prior distribution.
 #' @param hessian Logical. Should the Hessian matrix be calculated to obtain the parameter
 #' variance-covariance matrix.
 #' @param start Optional starting values for the parameter must be a list of the 
@@ -25,7 +26,7 @@
 #' @export
 fit_mmpp_dir <- function(data, ddl, 
                      model_parameters = list(lambda = ~1, q_r = ~1, q_m = ~1
-                     ), 
+                     ), pen_fun = NULL,
                      hessian=TRUE, start=NULL, method="nlminb", fit=TRUE, 
                      debug=0, ...){
   
@@ -87,6 +88,12 @@ fit_mmpp_dir <- function(data, ddl,
   
   start <- c(par_list$beta_l, par_list$beta_q_r, par_list$beta_q_m)
   
+  if(is.null(pen_fun)){
+    obj_fun <- function(par, data_list, debug=0, ...){mmpp_ll(par, data_list, debug=0, ...)}
+  } else{
+    obj_fun <- function(par, data_list, debug=0, ...){mmpp_ll(par, data_list, debug=0, ...) - 2*pen_fun(par)}
+  }
+  
   if(debug==2) browser()
   
   # mmpp_ll(start, data_list, debug=1)
@@ -95,13 +102,13 @@ fit_mmpp_dir <- function(data, ddl,
     message('Optimizing likelihood...')  
     if(debug==2) browser()
     # opt <- nlminb(start=start, objective=mmpp_ll, data_list=data_list, ...)
-    opt <- optimx::optimr(par=start, fn=mmpp_ll, method=method, data_list=data_list, ...)
+    opt <- optimx::optimr(par=start, fn=obj_fun, method=method, data_list=data_list, ...)
     
     if(opt$convergence!=0){
       message("There was a problem with optimization... See output 'optimx' object.")
       # return(list(opt=opt, data_list=data_list))
-      hessian <- FALSE
-      V <- NULL
+      # hessian <- FALSE
+      # V <- NULL
     }
     if(hessian){
       message('Calculating Hessian and variance-covariance matrices...')  
@@ -120,11 +127,12 @@ fit_mmpp_dir <- function(data, ddl,
   if(debug==3) browser()
   
   ### Get real lambda values
-  par <- opt$par
+  par <- as.vector(opt$par)
   # real <- get_reals(par, V, data_list, ddl, model_parameters)
   
   ### Get beta lambda values
   beta <- get_betas(par, V, data_list)
+  reals <- get_reals(par, V, data_list, ddl, model_parameters)
   
   if(!hessian) V <- NULL
   
@@ -135,8 +143,8 @@ fit_mmpp_dir <- function(data, ddl,
     log_lik = -0.5*opt$value,
     aic = opt$value + 2*length(par),
     results = list(
-      beta = beta#,
-      # real = real
+      beta = beta,
+      real = reals
     ),
     opt = opt,
     start=start,

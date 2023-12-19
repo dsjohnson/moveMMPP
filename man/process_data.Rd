@@ -4,12 +4,15 @@
 \alias{process_data}
 \title{Process MMPP movement detection data for model fitting}
 \usage{
-process_data(data, aug_timestamp, time_unit = "days")
+process_data(data, cell_name = NULL, aug_timestamp = NULL, time_unit = "days")
 }
 \arguments{
 \item{data}{Detection data. Must contain columns \code{timestamp} and \code{cell} to
 indicate time and place of detection. Also, must contain column named
 \code{id} to indicate different individuals.}
+
+\item{cell_name}{Character. The column name in the data representing the
+discrete spatial cells on which the animal moves.}
 
 \item{aug_timestamp}{Augmented times for modeling temporally dynamic movement or
 detection. See 'Details'}

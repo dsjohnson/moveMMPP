@@ -1,94 +1,58 @@
 #' @title Produce design data for use in fitting MMPP movement models
 #' @param sighting_data ---. 
 #' @param cell_data ---.
-#' @param add_fix ---.
-#' @param add_boundary_length Logical. ---. Defaults to \code{FALSE}.
+#' @param rast_mask Raster mask for inaccessible cells when \code{cell_data} is of type \code{SpatRaster} from the \code{terra} package. This is ignored
+#' if \code{cell_data} is an \code{POLYGON} data frame from the \code{sf} package.
 #' @param debug Debugging level: 1-3 mainly for package developers.
 #' @param ... Ignored arguments.
-#' @import dplyr sf
-#' @importFrom spdep poly2nb
-#' @importFrom rmapshaper ms_innerlines
+#' @import dplyr 
 #' @importFrom units set_units
 #' @export
-make_design_data <- function(sighting_data, cell_data, add_fix=TRUE, 
-                             add_boundary_length=FALSE, debug=0,...){
+make_design_data <- function(sighting_data=NULL, cell_data, rast_mask=NULL, debug=0,...){
   
-  cell <- cellx <- timestamp <- quad <- period <- fix <- from_cellx <- NULL
-  neighborhood <- to_cellx <- boundary <- NULL
+  cells <- obs <- timestamp <- quad <- NULL
   
   if(debug==1) browser()
   
-  obs_cells <- unique(sighting_data$cell)
-  obs_cells <- obs_cells[!is.na(obs_cells)]
-  cell_data$cellx <- as.integer(factor(cell_data$cell))
-  cells <- select(cell_data, cell, cellx) %>% st_drop_geometry()
-  if(!all(obs_cells %in% cells$cell)) stop("There are observed cells not in the cell data set!")
-  
-  quad_data <- select(sighting_data, timestamp, quad, period) %>% 
-    filter(quad==1) %>% distinct() %>% arrange(timestamp) %>% select(-quad)
-  
-  # time*cell data frame for lambda model
-  lambda_data <- bind_cols(
-    quad_data[rep(seq_len(nrow(quad_data)-1), each=nrow(cells)),],
-    cells[rep(seq_len(nrow(cells)), nrow(quad_data)-1),]
-  )
-  if(add_fix){
-    fix_data <- tibble(cell=obs_cells, fix=1)
-    lambda_data <- left_join(lambda_data, fix_data, by='cell')
-    lambda_data <- lambda_data %>% mutate(fix = ifelse(is.na(fix), 0, NA))
+  have_sight_data <- !is.null(sighting_data)
+  if(have_sight_data){
+    if(!attr(sighting_data, "proc_data")) stop("Sighting data must first be processed through the 'process_data(...) function!")
+    cell_name <- attr(sighting_data,"cell_name")
+    obs_cells <- unique(sighting_data$cell)
+    obs_cells <- obs_cells[!is.na(obs_cells)]
+    quad_data <- select(sighting_data, timestamp, quad, period) %>% 
+      filter(quad==1) %>% distinct() %>% arrange(timestamp) %>% select(-quad)
+  } else{
+    cell_name <- NULL
+    quad_data <- NULL
   }
   
-  q_r_data <- cell_data %>% st_drop_geometry()
-  lambda_data <- left_join(lambda_data, q_r_data, by = c("cell", "cellx"))
-  
-
-  ### Create Q matrix data frame
   if(debug==2) browser()
   
-  nb <- spdep::poly2nb(cell_data, queen=FALSE)
-  q_m_data <- cell_data %>% select(cellx) %>% st_drop_geometry() %>% rename(from_cellx = cellx) %>%
-    rowwise() %>%
-    mutate(
-      neighborhood = list(
-        tibble(cellx = nb[[from_cellx]], num_neigh=length(nb[[from_cellx]]))
-      )
-    ) %>% ungroup() %>% arrange(from_cellx) %>% unnest(cols=neighborhood) 
+  if(inherits(cell_data, "SpatRaster")){
+    q_list <- make_q_data_rast(cell_data, rast_mask=rast_mask)
+  } else if(inherits(cell_data, "sf")){
+    q_list <- make_q_data_sf(cell_data, cell_name)
+  }
   
-  q_m_data <- q_m_data %>% mutate(
-    from_area = st_area(cell_data[from_cellx,]) %>% set_units("km^2"),
-    area = st_area(cell_data[cellx,]) %>% set_units("km^2")
-  ) %>% arrange(from_cellx, cellx)
+  lambda_data <- q_list$q_r
   
-  if(add_boundary_length) warning("'add_boudary_length' not currently implemented.")
-  # if(add_boundary_length){
-  #   move_data <- move_data %>% rowwise() %>%
-  #     mutate(
-  #       boundary = list(ms_innerlines(cell_data[c(from_cellx,cellx),])),
-  #       boundary_length = st_length(boundary) %>% set_units("km")
-  #     ) %>% ungroup() %>% select(-boundary)
-  # }
-  
-  cov_nms <- colnames(q_r_data)
-  colnames(q_r_data) <- paste0("from_",cov_nms)
-  q_m_data <- left_join(q_m_data, q_r_data, by="from_cellx")
-  colnames(q_r_data) <- cov_nms
-  q_m_data <- left_join(q_m_data, q_r_data, by="cellx")
-  
-  q_m_data$fix <- NA
-  
-  # if(dynamic_movement){
-  #   # add code here to expand move_data by quad_data if time indexed movement is 
-  #   # desired.
-  # }
-  
-  obs_cell <- cells %>% filter(cell %in% obs_cells)
+  if(have_sight_data){
+    period_data <- bind_cols(
+      quad_data[rep(seq_len(nrow(quad_data)-1), each=nrow(lambda_data)),],
+      cell=lambda_data$cell[rep(seq_len(nrow(lambda_data)), nrow(quad_data)-1)]
+    )
+    lambda_data <- left_join(lambda_data, period_data, by="cell")
+    lambda_data$obs <- ifelse(lambda_data$cell%in%obs_cells, 1, 0)
+    avail_cells <- unique(lambda_data$cell)
+    if(!all(obs_cells %in% avail_cells)) stop("There are observed cells in the sighting data not in the cell data!")
+  }
   
   out <- list(
     lambda = lambda_data,
-    q_r = q_r_data,
-    q_m = q_m_data,
-    quad_pts = quad_data,
-    obs_cell = obs_cell
+    q_r = q_list$q_r,
+    q_m = q_list$q_m,
+    quad_pts = quad_data
   )
   
   if(debug==3) browser()
@@ -96,3 +60,8 @@ make_design_data <- function(sighting_data, cell_data, add_fix=TRUE,
   return(out)
   
 }
+  
+  
+  
+  
+   

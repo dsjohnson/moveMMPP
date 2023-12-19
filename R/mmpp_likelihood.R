@@ -3,6 +3,7 @@
 #' @param data_list List of required data objects to evaluate likelihood
 #' @param debug For developers only, leave in the default setting.
 #' @param ... Extra wiggle room for ignored arguments.
+#' @importFrom stats aggregate
 #' @author Devin S. Johnson
 #' @export
 mmpp_ll <- function(par, data_list, debug=0, ...){

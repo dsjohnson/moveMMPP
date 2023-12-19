@@ -15,10 +15,9 @@ dm_q_m(formula, ddl)
 dm_q_r(formula, ddl)
 }
 \arguments{
-\item{ddl}{Design data list}
+\item{formula}{An \code{R} formula object for the paramter vector.}
 
-\item{par_list}{A list with named elements \code{form} ( the model formula) and
-\code{offset} (formula for the offset; must result in a single column from call to \code{model.matrix})}
+\item{ddl}{Design data list}
 }
 \description{
 Create sparse representations of design matrices for
