@@ -11,7 +11,11 @@ NULL
 #' @export
 dm_lambda <- function(formula, ddl){
   X <- model.matrix(formula, ddl$lambda)
-  rX <- X[is.na(ddl$lambda$fix),,drop=FALSE]
+  if("fix"%in%names(ddl$lambda)){
+    rX <- X[is.na(ddl$lambda$fix),,drop=FALSE]
+  } else{
+    rX <- X
+  }
   keep_col <- !((colMeans(rX)!=1) & (apply(rX, 2, sd)==0))
   X <- X[,keep_col,drop=FALSE]
   ### This section returns a reduce model matrix with only unique rows and 

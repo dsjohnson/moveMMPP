@@ -46,7 +46,11 @@ make_design_data <- function(sighting_data=NULL, cell_data, rast_mask=NULL, debu
     lambda_data$obs <- ifelse(lambda_data$cell%in%obs_cells, 1, 0)
     avail_cells <- unique(lambda_data$cell)
     if(!all(obs_cells %in% avail_cells)) stop("There are observed cells in the sighting data not in the cell data!")
+  } else{
+    lambda_data$period <- 1
+    lambda_data$obs <- NA
   }
+  lambda_data$fix <- NA
   
   out <- list(
     lambda = lambda_data,

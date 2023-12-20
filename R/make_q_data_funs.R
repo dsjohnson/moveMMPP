@@ -20,11 +20,13 @@ make_q_data_rast <- function(cell_data, rast_mask=NULL,...){
     cell = 1:N,
     x = terra::xFromCell(cell_data, 1:N),
     y = terra::yFromCell(cell_data, 1:N),
-    mask = terra::values(rast_mask, dataframe=TRUE)[,1]
   ) 
+  q_r_data <- q_r_data %>% bind_cols(terra::values(cell_data, dataframe=TRUE))
   
-  q_r_data <- q_r_data %>% bind_cols(terra::values(cell_data, dataframe=TRUE)) %>% 
-    filter(!is.na(mask)) %>% select(-mask)
+  if(!is.null(mask)){
+    q_r_data$mask <- terra::values(rast_mask, dataframe=TRUE)[,1]
+    q_r_data <- q_r_data %>% dplyr::filter(!is.na(mask)) %>% dplyr::select(-mask)
+  } 
   
   q_r_data <- q_r_data %>% mutate(
     cellx =  as.numeric(factor(cell))
