@@ -23,7 +23,7 @@ make_q_data_rast <- function(cell_data, rast_mask=NULL,...){
   ) 
   q_r_data <- q_r_data %>% bind_cols(terra::values(cell_data, dataframe=TRUE))
   
-  if(!is.null(mask)){
+  if(!is.null(rast_mask)){
     q_r_data$mask <- terra::values(rast_mask, dataframe=TRUE)[,1]
     q_r_data <- q_r_data %>% dplyr::filter(!is.na(mask)) %>% dplyr::select(-mask)
   } 
@@ -33,9 +33,10 @@ make_q_data_rast <- function(cell_data, rast_mask=NULL,...){
   )
   
   ### Make Q_m data
+  adj_mat <- terra::adjacent(cell_data, 1:N, directions=directions)
   q_m_data <- tibble(
-    from_cell = rep(1:N, each=4), 
-    cell=as.vector(t(terra::adjacent(cell_data, 1:N)))
+    from_cell = rep(1:N, each=ncol(adj_mat)), 
+    cell=as.vector(t(adj_mat))
   ) %>% filter(!is.na(cell)) %>% filter(from_cell %in% q_r_data$cell) %>% 
     filter(cell %in% q_r_data$cell)
   
