@@ -2,7 +2,7 @@
 #' @param data A processed data frame produced by the function \code{\link{process_data}}
 #' @param ddl A design data list produced by the function \code{\link{make_design_data}}.
 #' @param model_parameters Model formula for the detection and movement portions
-#' of the MMPP model. 
+#' of the MMPP model. See `\link{mmpp_control}`
 #' @param pen_fun An optional penalty function. Should be on the scale of a log-prior distribution.
 #' @param hessian Logical. Should the Hessian matrix be calculated to obtain the parameter
 #' variance-covariance matrix.
@@ -10,6 +10,7 @@
 #' form \code{list(beta_l=c(), beta_q_r=c(), beta_q_r=c())}.
 #' @param method Optimization method. See \code{\link[optimx]{optimr}}
 #' @param fit Logical. Should the likelihood be optimized?
+#' @param eq_prec Precision of the matrix exponential approximation. 
 #' @param debug Integer from 1-4. Opens browser() at various points in the function call. Mostly for 
 #' package developers. 
 #' @param ... Additional arguments passed to the optimization function 
@@ -24,11 +25,11 @@
 #' @import optimx dplyr numDeriv
 #' @importFrom stats ppois
 #' @export
-fit_mmpp_dir <- function(data, ddl, 
-                     model_parameters = list(lambda = ~1, q_r = ~1, q_m = ~1
-                     ), pen_fun = NULL,
+fit_mmpp <- function(data, ddl, 
+                     model_parameters = mmpp_control(), 
+                     pen_fun = NULL,
                      hessian=TRUE, start=NULL, method="nlminb", fit=TRUE, 
-                     debug=0, ...){
+                     eq_prec=1.0e-8, debug=0, ...){
   
   cell <- cellx <- fix <- NULL
   
@@ -37,9 +38,9 @@ fit_mmpp_dir <- function(data, ddl,
   cell_idx_df <- select(ddl$q_r, cell, cellx) %>% distinct()
   data <- data %>% left_join(cell_idx_df, by="cell")
   
-  dml <- dm_lambda(model_parameters$lambda, ddl)
-  dmq_r <- dm_q_r(model_parameters$q_r, ddl)
-  dmq_m <- dm_q_m(model_parameters$q_m, ddl)
+  dml <- dm_lambda(model_parameters$lambda$form, ddl)
+  dmq_r <- dm_q_r(model_parameters$q_r$form, ddl)
+  dmq_m <- dm_q_m(model_parameters$q_m$form, ddl)
   
   data$period <- ifelse(is.na(data$cell), data$period-1, data$period)
   
@@ -48,7 +49,35 @@ fit_mmpp_dir <- function(data, ddl,
     beta_q_r = c(1:ncol(dmq_r$X_q_r)) + ncol(dml$X_l)
   )
   if(ncol(dmq_m$X_q_m)!=0) par_map$beta_q_m = c(1:ncol(dmq_m$X_q_m)) + ncol(dmq_r$X_q_r) + ncol(dml$X_l)
-
+  
+  ### Initial location probability
+  # delta <- model_parameters$delta
+  # if(is.numeric(delta)){
+  #   if(length(delta) != nrow(walk_data$q_r)) stop("The length of 'delta' vector is not equal to the number of cells.")
+  #   delta <- delta/sum(delta)
+  # }
+  # if(delta=="uniform"){
+  #   delta <- rep(1,nrow(walk_data$q_r))
+  #   delta <- delta/sum(delta)
+  # }
+  
+  ### Link function parameters
+  link_l <- model_parameters$lambda$link
+  link_r <- model_parameters$q_r$link
+  link_m <- model_parameters$q_m$link
+  if(!all(c(link_r,link_m)%in%c("soft_plus","log","logit"))) stop("The 'link' objects in must be either 'soft_plus' or 'log'.")
+  
+  
+  struc <- model_parameters$struc
+  if(!struc%in%c("mult","add","sde")) stop("The 'struc' object in must be either 'mult' or 'add'.")
+  
+  a_r <- model_parameters$q_r$a
+  a_m <- model_parameters$q_m$a
+  if(a_r<1 | a_m<1) stop("The 'a' parameter for the 'soft_plus' link functions must be >1.")
+  
+  norm <- model_parameters$norm
+  if(!is.logical(norm)) norm <- TRUE
+  
   
   data_list <- list(
     N = as.integer(nrow(data)),
@@ -61,32 +90,30 @@ fit_mmpp_dir <- function(data, ddl,
     cell = as.integer(data$cellx-1),
     ### lambda
     X_l = dml$X_l,
-    # off_l = dml_list$off_l,
     fix_l = ddl$lambda$fix,
     period_l = as.integer(ddl$lambda$period-1),
     cell_l = as.integer(ddl$lambda$cellx-1),
-    # idx_l = as.integer(dml_list$idx_l$idx_l-1),
     ### Q
     from = as.integer(ddl$q_m$from_cellx-1),
     to = as.integer(ddl$q_m$cellx-1),
     X_q_r = dmq_r$X_q_r,
     X_q_m = dmq_m$X_q_m,
-    # off_q = dmq_list$off_q,
-    # idx_q = as.integer(dmq_list$idx_q$idx_q-1)
-    par_map = par_map
+    par_map = par_map,
+    eq_prec = eq_prec,
+    link_r=link_r,
+    link_m=link_m,
+    struc=struc,
+    a_r = a_r,
+    a_m = a_m,
+    norm = norm,
+    cell_map = ddl$q_r[,c("cell","cellx")]
   )
   
-  if(is.null(start)){
-    par_list <- list(
-      beta_l = rep(0,ncol(dml$X_l)), 
-      beta_q_r = rep(0, ncol(dmq_r$X_q_r)),
-      beta_q_m = rep(0, ncol(dmq_m$X_q_m))
-    )
-  } else{
-    par_list=start
-  }
-  
-  start <- c(par_list$beta_l, par_list$beta_q_r, par_list$beta_q_m)
+
+  if(is.null(start$beta_l)) start$beta_l <- rep(0, ncol(dml$X_l))
+  if(is.null(start$beta_q_r)) start$beta_q_r <- rep(0, ncol(dmq_r$X_q_r))
+  if(is.null(start$beta_q_m)) start$beta_q_m <- rep(0, ncol(dmq_m$X_q_m))
+  par_start <- c(start$beta_l, start$beta_q_r, start$beta_q_m)
   
   if(is.null(pen_fun)){
     obj_fun <- function(par, data_list, debug=0, ...){mmpp_ll(par, data_list, debug=0, ...)}
@@ -102,7 +129,7 @@ fit_mmpp_dir <- function(data, ddl,
     message('Optimizing likelihood...')  
     if(debug==2) browser()
     # opt <- nlminb(start=start, objective=mmpp_ll, data_list=data_list, ...)
-    opt <- optimx::optimr(par=start, fn=obj_fun, method=method, data_list=data_list, ...)
+    opt <- optimx::optimr(par=par_start, fn=obj_fun, method=method, data_list=data_list, ...)
     
     if(opt$convergence!=0){
       message("There was a problem with optimization... See output 'optimx' object.")
@@ -121,7 +148,7 @@ fit_mmpp_dir <- function(data, ddl,
   } else{
     hessian <- FALSE
     V <- NULL
-    opt <- list(par=start, objective=mmpp_ll(start, data_list))
+    opt <- list(par=par_start, objective=obj_fun(par_start, data_list))
   }
   
   if(debug==3) browser()
@@ -132,7 +159,6 @@ fit_mmpp_dir <- function(data, ddl,
   
   ### Get beta lambda values
   beta <- get_betas(par, V, data_list)
-  reals <- get_reals(par, V, data_list, ddl, model_parameters)
   
   if(!hessian) V <- NULL
   
@@ -142,12 +168,9 @@ fit_mmpp_dir <- function(data, ddl,
     vcov = V,
     log_lik = -0.5*opt$value,
     aic = opt$value + 2*length(par),
-    results = list(
-      beta = beta,
-      real = reals
-    ),
+    results = beta,
     opt = opt,
-    start=start,
+    start=par_start,
     data_list=data_list
   )
   

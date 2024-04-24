@@ -5,15 +5,27 @@ phi_exp_lnG <- function(phi, lnG, prec = 1.0e-8) {
     .Call(`_moveMMPP_phi_exp_lnG`, phi, lnG, prec)
 }
 
-load_Q <- function(from_to, Xb_q_r, Xb_q_m, ns, norm = TRUE) {
-    .Call(`_moveMMPP_load_Q`, from_to, Xb_q_r, Xb_q_m, ns, norm)
+logit <- function(x, L = 0.0, U = 0.0) {
+    .Call(`_moveMMPP_logit`, x, L, U)
+}
+
+soft_plus <- function(x, a = 1.0) {
+    .Call(`_moveMMPP_soft_plus`, x, a)
+}
+
+load_Q_mult <- function(from_to, Xb_q_r, Xb_q_m, ns, link_r = 1L, link_m = 1L, a_r = 1.0, a_m = 1.0, norm = TRUE) {
+    .Call(`_moveMMPP_load_Q_mult`, from_to, Xb_q_r, Xb_q_m, ns, link_r, link_m, a_r, a_m, norm)
+}
+
+load_Q_add <- function(from_to, Xb_q_r, Xb_q_m, ns, link_r = 1L, link_m = 1L, a_r = 1.0, a_m = 1.0) {
+    .Call(`_moveMMPP_load_Q_add`, from_to, Xb_q_r, Xb_q_m, ns, link_r, link_m, a_r, a_m)
 }
 
 load_L <- function(period_l, cell_l, fix_l, Xb_l, ns, np) {
     .Call(`_moveMMPP_load_L`, period_l, cell_l, fix_l, Xb_l, ns, np)
 }
 
-mmpp_arma <- function(id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, row_sweep = TRUE) {
-    .Call(`_moveMMPP_mmpp_arma`, id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, row_sweep)
+mmpp_arma <- function(id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec = 1.0e-8, link_r = 1L, link_m = 1L, struc = 1L, a_r = 1.0, a_m = 1.0, k = 2.0, norm = TRUE) {
+    .Call(`_moveMMPP_mmpp_arma`, id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec, link_r, link_m, struc, a_r, a_m, k, norm)
 }
 

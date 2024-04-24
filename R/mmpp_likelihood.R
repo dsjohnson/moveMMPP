@@ -17,16 +17,16 @@ mmpp_ll <- function(par, data_list, debug=0, ...){
   Xb_l <- data_list$X_l %*% beta_l
   Xb_q_r <- data_list$X_q_r %*% beta_q_r
   Xb_q_m <- data_list$X_q_m %*% beta_q_m
-  # e <- rnorm(length(Xb_q_m))
-  # Xb_q_m = Xb_q_m + e
+
   
-  #if(ncol(data_list$X_q_m)==0) Xb_q_m = Xb_q_m + 1
+  # if(is.character(data_list$delta) && data_list$delta=="stationary"){
+  #   delta <- get_lim_ud(list(par = par, data_list = data_list))
+  #   delta <- delta$ud
+  #   delta <- delta/sum(delta)
+  # } else{
+  #   delta <- data_list$delta
+  # }
   
-  mx <- (aggregate(Xb_q_m, list(data_list$from), max)[,2])[data_list$from+1]
-  Xb_q_m <- Xb_q_m-mx
-  
-  # L_mat <- load_L(data_list$period_l, data_list$cell_l, data_list$fix_l, Xb_l, data_list$ns,data_list$np)
-  # qqq <- load_Q(from_to, Xb_q_r, Xb_q_m, data_list$ns, norm=TRUE)
   
   mmpp_arma(
     data_list$id, 
@@ -41,7 +41,15 @@ mmpp_ll <- function(par, data_list, debug=0, ...){
     data_list$cell_l, 
     from_to, 
     Xb_q_r, 
-    Xb_q_m
+    Xb_q_m,
+    # delta = matrix(delta, nrow=1),
+    eq_prec = data_list$eq_prec,
+    link_r = which(data_list$link_r==c("soft_plus", "log", "logit")),
+    link_m = which(data_list$link_m==c("soft_plus", "log", "logit")),
+    struc = which(data_list$struc==c("mult", "add", "sde")),
+    a_r = data_list$a_r,
+    a_m = data_list$a_m,
+    norm = data_list$norm
   )$n2ll
 }
 

@@ -4,7 +4,7 @@
 \alias{make_sim_dm}
 \title{Create model data necessary for MMPP simulation}
 \usage{
-make_sim_dm(ddl, model_parameters = list(lambda = ~1, q_r = ~1, q_m = ~1))
+make_sim_dm(ddl, model_parameters = mmpp_control())
 }
 \arguments{
 \item{ddl}{Design data list created from \code{\link[moveMMPP]{make_design_data}}.}

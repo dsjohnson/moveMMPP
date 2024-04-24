@@ -1,7 +1,7 @@
 Package: moveMMPP
 Title: Fit Continuous-Time Markov Modulated Poisson Process Movement Models to Animal Resight Data
-Version: 0.0.0.9021
-Date: 12-19-2023
+Version: 0.0.0.9022
+Date: 04-24-2024
 Authors@R: 
     person("Devin", "Johnson", , "devin.johnson@noaa.gov", role = c("aut", "cre"))
 Description: Using animal resight data, the package functions allow the user to 
@@ -10,11 +10,11 @@ Description: Using animal resight data, the package functions allow the user to
 License: GPL (>= 2)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Depends:
     Matrix
 Imports: 
-    dplyr, sf, spdep, tidyr, units, lubridate, optimx, numDeriv, mvnfast, terra
+    dplyr, sf, spdep, tidyr, units, lubridate, optimx, numDeriv, terra, rARPACK
 LinkingTo: 
     Rcpp, RcppArmadillo, expQ2
 Remotes: 
