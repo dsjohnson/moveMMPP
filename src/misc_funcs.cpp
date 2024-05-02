@@ -27,6 +27,11 @@ arma::vec logit(const arma::vec& x, const double& L=0.0, const double& U=0.0) {
   return(out);
 }
 
+double soft_plus1(const double& x, const double& a=1.0){
+  return std::max(0.0, x) + log1p(exp(-abs(a*x)))/a; 
+}
+
+
 //[[Rcpp::export]]
 arma::vec soft_plus(const arma::vec& x, const double& a = 1.0){
   if(a < 1.0) stop("'a' must be > 1 for soft-plus link function.");
@@ -153,13 +158,20 @@ arma::mat load_L(
     const arma::vec& cell_l,
     const arma::vec& fix_l,
     const arma::vec& Xb_l,
-    const int& ns, const int& np
+    const int& ns, const int& np,
+    const int& link_l=1,
+    const double& a_l=1.0
 ){
   arma::mat L_mat(ns,np);
   int n = period_l.size();
+  
   for(int i=0; i<n; i++){
     if(!R_finite(fix_l(i))){
-      L_mat(cell_l(i), period_l(i)) = trunc_exp(Xb_l(i));
+      if(link_l==1){
+        L_mat(cell_l(i), period_l(i)) = soft_plus1(Xb_l(i), a_l);
+      } else{
+        L_mat(cell_l(i), period_l(i)) = trunc_exp(Xb_l(i)); 
+      }
     } else{
       L_mat(cell_l(i), period_l(i)) = fix_l(i);
     }

@@ -29,10 +29,9 @@ mmpp_model <- function(form=~1, link="soft_plus", a=1, L=0, U=0){
 
 #' @name arg_funs
 #' @export
-mmpp_control <- function(q_r = mmpp_model(), q_m=mmpp_model(), lambda=mmpp_model(),
-                         struc="mult", norm=TRUE){
+mmpp_control <- function(lambda=mmpp_model(), q_r = mmpp_model(), q_m=mmpp_model(), struc="mult", norm=TRUE){
   out <- list(
-    q_r = q_r, q_m=q_m, struc=struc, norm=norm
+    lambda=lambda, q_r = q_r, q_m=q_m, struc=struc, norm=norm
   )
   class(out) <- c("list","mmpp_cont")
   return(out)

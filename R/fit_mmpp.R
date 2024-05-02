@@ -71,9 +71,10 @@ fit_mmpp <- function(data, ddl,
   struc <- model_parameters$struc
   if(!struc%in%c("mult","add","sde")) stop("The 'struc' object in must be either 'mult' or 'add'.")
   
+  a_l <- model_parameters$lambda$a
   a_r <- model_parameters$q_r$a
   a_m <- model_parameters$q_m$a
-  if(a_r<1 | a_m<1) stop("The 'a' parameter for the 'soft_plus' link functions must be >1.")
+  if(a_l<1 | a_r<1 | a_m<1) stop("The 'a' parameter for the 'soft_plus' link functions must be >1.")
   
   norm <- model_parameters$norm
   if(!is.logical(norm)) norm <- TRUE
@@ -100,16 +101,17 @@ fit_mmpp <- function(data, ddl,
     X_q_m = dmq_m$X_q_m,
     par_map = par_map,
     eq_prec = eq_prec,
+    link_l = link_l,
     link_r=link_r,
     link_m=link_m,
     struc=struc,
+    a_l = a_l, 
     a_r = a_r,
     a_m = a_m,
     norm = norm,
     cell_map = ddl$q_r[,c("cell","cellx")]
   )
   
-
   if(is.null(start$beta_l)) start$beta_l <- rep(0, ncol(dml$X_l))
   if(is.null(start$beta_q_r)) start$beta_q_r <- rep(0, ncol(dmq_r$X_q_r))
   if(is.null(start$beta_q_m)) start$beta_q_m <- rep(0, ncol(dmq_m$X_q_m))

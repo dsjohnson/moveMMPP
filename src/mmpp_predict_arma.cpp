@@ -9,13 +9,14 @@
 // 
 // // function prototypes
 // arma::mat phi_exp_lnG(const arma::mat& phi, const arma::sp_mat&  lnG, const double& prec=1.0e-8);
+// arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l, const arma::vec& fix_l, const arma::vec& Xb_l, const int& ns, const int& np, const int& link_l=1, const double& a_l=1.0);
 // arma::sp_mat load_Q_mult(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const int& link_r=1, const int& link_m=1, const double& a_r=1.0, const double& a_m=1.0, const bool& norm=true);
 // arma::sp_mat load_Q_add(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const int& link_r=1, const int& link_m=1, const double& a_r=1.0, const double& a_m=1.0);
 // arma::sp_mat load_Q_sde(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const double& k,const double& a_r=1.0);
 // 
 // // Calculate likelihood ///////////////
 // // [[Rcpp::export]]
-// Rcpp::List ctmc_predict_arma(
+// Rcpp::List mmpp_predict_arma(
 //     const arma::sp_mat& L,
 //     const arma::vec& obs,
 //     const arma::vec& dt,

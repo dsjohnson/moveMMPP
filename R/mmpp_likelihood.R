@@ -27,7 +27,6 @@ mmpp_ll <- function(par, data_list, debug=0, ...){
   #   delta <- data_list$delta
   # }
   
-  
   mmpp_arma(
     data_list$id, 
     data_list$period, 
@@ -44,9 +43,11 @@ mmpp_ll <- function(par, data_list, debug=0, ...){
     Xb_q_m,
     # delta = matrix(delta, nrow=1),
     eq_prec = data_list$eq_prec,
+    link_l = which(data_list$link_r==c("soft_plus", "log", "logit")),
     link_r = which(data_list$link_r==c("soft_plus", "log", "logit")),
     link_m = which(data_list$link_m==c("soft_plus", "log", "logit")),
     struc = which(data_list$struc==c("mult", "add", "sde")),
+    a_l = data_list$a_l,
     a_r = data_list$a_r,
     a_m = data_list$a_m,
     norm = data_list$norm

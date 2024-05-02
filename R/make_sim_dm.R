@@ -20,5 +20,5 @@ make_sim_dm <- function(ddl, model_parameters = mmpp_control()){
   from_to <- ddl$q_m[,c("from_cellx","cellx")]
   fix_l <- ddl$lambda$fix
   
-  return(list(X_l = dml$X_l, X_q_r=dmq_r$X_q_r, X_q_m=dmq_m$X_q_m, par_map=par_map, from_to=from_to, fix_l=fix_l))
+  return(list(X_l = dml$X_l, X_q_r=dmq_r$X_q_r, X_q_m=dmq_m$X_q_m, par_map=par_map, from_to=from_to, fix_l=fix_l, model_parameters=model_parameters))
 }

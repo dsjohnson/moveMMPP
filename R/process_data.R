@@ -12,7 +12,8 @@
 #' augmentation times from the original data. This is specified by providing a 
 #' character string that corresponds to the by argument of the seq.POSIXt 
 #' function (e.g. '1 year', '1 month'). 
-#' @import dplyr tidyr lubridate
+#' @import dplyr lubridate
+#' @rawNamespace import(tidyr, except=expand)
 #' @export
 process_data <- function(data, cell_name=NULL, aug_timestamp=NULL, time_unit="days"){
   

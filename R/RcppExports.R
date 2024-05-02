@@ -21,11 +21,11 @@ load_Q_add <- function(from_to, Xb_q_r, Xb_q_m, ns, link_r = 1L, link_m = 1L, a_
     .Call(`_moveMMPP_load_Q_add`, from_to, Xb_q_r, Xb_q_m, ns, link_r, link_m, a_r, a_m)
 }
 
-load_L <- function(period_l, cell_l, fix_l, Xb_l, ns, np) {
-    .Call(`_moveMMPP_load_L`, period_l, cell_l, fix_l, Xb_l, ns, np)
+load_L <- function(period_l, cell_l, fix_l, Xb_l, ns, np, link_l = 1L, a_l = 1.0) {
+    .Call(`_moveMMPP_load_L`, period_l, cell_l, fix_l, Xb_l, ns, np, link_l, a_l)
 }
 
-mmpp_arma <- function(id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec = 1.0e-8, link_r = 1L, link_m = 1L, struc = 1L, a_r = 1.0, a_m = 1.0, k = 2.0, norm = TRUE) {
-    .Call(`_moveMMPP_mmpp_arma`, id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec, link_r, link_m, struc, a_r, a_m, k, norm)
+mmpp_arma <- function(id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec = 1.0e-8, link_l = 1L, link_r = 1L, link_m = 1L, struc = 1L, a_l = 1.0, a_r = 1.0, a_m = 1.0, norm = TRUE) {
+    .Call(`_moveMMPP_mmpp_arma`, id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec, link_l, link_r, link_m, struc, a_l, a_r, a_m, norm)
 }
 

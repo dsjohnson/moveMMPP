@@ -9,7 +9,7 @@ using namespace arma;
 
 // function prototypes
 arma::mat phi_exp_lnG(const arma::mat& phi, const arma::sp_mat&  lnG, const double& prec=1.0e-8);
-arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l, const arma::vec& fix_l, const arma::vec& Xb_l, const int& ns, const int& np);
+arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l, const arma::vec& fix_l, const arma::vec& Xb_l, const int& ns, const int& np, const int& link_l=1, const double& a_l=1.0);
 arma::sp_mat load_Q_mult(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const int& link_r=1, const int& link_m=1, const double& a_r=1.0, const double& a_m=1.0, const bool& norm=true);
 arma::sp_mat load_Q_add(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const int& link_r=1, const int& link_m=1, const double& a_r=1.0, const double& a_m=1.0);
 arma::sp_mat load_Q_sde(const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const int& ns, const double& k,const double& a_r=1.0);
@@ -26,12 +26,13 @@ Rcpp::List mmpp_arma(const arma::vec& id, const  arma::vec& period,
                      const arma::umat& from_to, 
                      const arma::vec& Xb_q_r, const arma::vec& Xb_q_m,
                      const double& eq_prec = 1.0e-8,
+                     const int& link_l = 1,  
                      const int& link_r = 1,
                      const int& link_m = 1,
                      const int& struc = 1,
+                     const double& a_l = 1.0,
                      const double& a_r = 1.0, 
-                     const double& a_m = 1.0, 
-                     const double& k = 2.0,
+                     const double& a_m = 1.0,
                      const bool& norm=true)
 {
   int N = cell.size();
@@ -50,7 +51,7 @@ Rcpp::List mmpp_arma(const arma::vec& id, const  arma::vec& period,
   // }
   
   arma::sp_mat lnG(ns,ns);
-  arma::mat L_mat = load_L(period_l, cell_l, fix_l, Xb_l, ns, np);
+  arma::mat L_mat = load_L(period_l, cell_l, fix_l, Xb_l, ns, np, link_l, a_l);
   // Start forward loop
   arma::rowvec v(ns);
   arma::rowvec phi(ns);

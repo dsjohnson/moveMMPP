@@ -9,9 +9,9 @@
 mmpp_model(form = ~1, link = "soft_plus", a = 1, L = 0, U = 0)
 
 mmpp_control(
+  lambda = mmpp_model(),
   q_r = mmpp_model(),
   q_m = mmpp_model(),
-  lambda = mmpp_model(),
   struc = "mult",
   norm = TRUE
 )
@@ -28,12 +28,12 @@ a hard plus function, i.e., as \code{a} becomes large the soft plus function con
 
 \item{U}{Upper bound for general logit link.}
 
+\item{lambda}{A named list for the detection portion of the model. See \verb{\link{mmpp_model}}}
+
 \item{q_r}{A named list for the residency model. Must contain elements: \code{form}, \code{link}, and \code{a}.
 The easiest way to construct this is the \verb{\link{mmpp_model}} function.}
 
 \item{q_m}{A named list for the movement portion of the model. See \code{q_r} and \verb{\link{mmpp_model}}.}
-
-\item{lambda}{A named list for the detection portion of the model. See \verb{\link{mmpp_model}}}
 
 \item{struc}{The form of the rate matrix entries. Can be one of: \code{"mult"} for residency times movement, i.e., q_{ij} = q_r(i) * pi_m(i,j) or \code{"add"} for a model of
 the form q_{ij} = q_r(i) + pi_m(i,j).}

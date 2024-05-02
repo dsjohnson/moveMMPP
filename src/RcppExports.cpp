@@ -87,8 +87,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // load_L
-arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l, const arma::vec& fix_l, const arma::vec& Xb_l, const int& ns, const int& np);
-RcppExport SEXP _moveMMPP_load_L(SEXP period_lSEXP, SEXP cell_lSEXP, SEXP fix_lSEXP, SEXP Xb_lSEXP, SEXP nsSEXP, SEXP npSEXP) {
+arma::mat load_L(const arma::vec& period_l, const arma::vec& cell_l, const arma::vec& fix_l, const arma::vec& Xb_l, const int& ns, const int& np, const int& link_l, const double& a_l);
+RcppExport SEXP _moveMMPP_load_L(SEXP period_lSEXP, SEXP cell_lSEXP, SEXP fix_lSEXP, SEXP Xb_lSEXP, SEXP nsSEXP, SEXP npSEXP, SEXP link_lSEXP, SEXP a_lSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -98,13 +98,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type Xb_l(Xb_lSEXP);
     Rcpp::traits::input_parameter< const int& >::type ns(nsSEXP);
     Rcpp::traits::input_parameter< const int& >::type np(npSEXP);
-    rcpp_result_gen = Rcpp::wrap(load_L(period_l, cell_l, fix_l, Xb_l, ns, np));
+    Rcpp::traits::input_parameter< const int& >::type link_l(link_lSEXP);
+    Rcpp::traits::input_parameter< const double& >::type a_l(a_lSEXP);
+    rcpp_result_gen = Rcpp::wrap(load_L(period_l, cell_l, fix_l, Xb_l, ns, np, link_l, a_l));
     return rcpp_result_gen;
 END_RCPP
 }
 // mmpp_arma
-Rcpp::List mmpp_arma(const arma::vec& id, const arma::vec& period, const arma::vec& dt, const arma::vec& cell, const int& ns, const int& np, const arma::vec& Xb_l, const arma::vec& fix_l, const arma::vec& period_l, const arma::vec& cell_l, const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const double& eq_prec, const int& link_r, const int& link_m, const int& struc, const double& a_r, const double& a_m, const double& k, const bool& norm);
-RcppExport SEXP _moveMMPP_mmpp_arma(SEXP idSEXP, SEXP periodSEXP, SEXP dtSEXP, SEXP cellSEXP, SEXP nsSEXP, SEXP npSEXP, SEXP Xb_lSEXP, SEXP fix_lSEXP, SEXP period_lSEXP, SEXP cell_lSEXP, SEXP from_toSEXP, SEXP Xb_q_rSEXP, SEXP Xb_q_mSEXP, SEXP eq_precSEXP, SEXP link_rSEXP, SEXP link_mSEXP, SEXP strucSEXP, SEXP a_rSEXP, SEXP a_mSEXP, SEXP kSEXP, SEXP normSEXP) {
+Rcpp::List mmpp_arma(const arma::vec& id, const arma::vec& period, const arma::vec& dt, const arma::vec& cell, const int& ns, const int& np, const arma::vec& Xb_l, const arma::vec& fix_l, const arma::vec& period_l, const arma::vec& cell_l, const arma::umat& from_to, const arma::vec& Xb_q_r, const arma::vec& Xb_q_m, const double& eq_prec, const int& link_l, const int& link_r, const int& link_m, const int& struc, const double& a_l, const double& a_r, const double& a_m, const bool& norm);
+RcppExport SEXP _moveMMPP_mmpp_arma(SEXP idSEXP, SEXP periodSEXP, SEXP dtSEXP, SEXP cellSEXP, SEXP nsSEXP, SEXP npSEXP, SEXP Xb_lSEXP, SEXP fix_lSEXP, SEXP period_lSEXP, SEXP cell_lSEXP, SEXP from_toSEXP, SEXP Xb_q_rSEXP, SEXP Xb_q_mSEXP, SEXP eq_precSEXP, SEXP link_lSEXP, SEXP link_rSEXP, SEXP link_mSEXP, SEXP strucSEXP, SEXP a_lSEXP, SEXP a_rSEXP, SEXP a_mSEXP, SEXP normSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -122,14 +124,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type Xb_q_r(Xb_q_rSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type Xb_q_m(Xb_q_mSEXP);
     Rcpp::traits::input_parameter< const double& >::type eq_prec(eq_precSEXP);
+    Rcpp::traits::input_parameter< const int& >::type link_l(link_lSEXP);
     Rcpp::traits::input_parameter< const int& >::type link_r(link_rSEXP);
     Rcpp::traits::input_parameter< const int& >::type link_m(link_mSEXP);
     Rcpp::traits::input_parameter< const int& >::type struc(strucSEXP);
+    Rcpp::traits::input_parameter< const double& >::type a_l(a_lSEXP);
     Rcpp::traits::input_parameter< const double& >::type a_r(a_rSEXP);
     Rcpp::traits::input_parameter< const double& >::type a_m(a_mSEXP);
-    Rcpp::traits::input_parameter< const double& >::type k(kSEXP);
     Rcpp::traits::input_parameter< const bool& >::type norm(normSEXP);
-    rcpp_result_gen = Rcpp::wrap(mmpp_arma(id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec, link_r, link_m, struc, a_r, a_m, k, norm));
+    rcpp_result_gen = Rcpp::wrap(mmpp_arma(id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec, link_l, link_r, link_m, struc, a_l, a_r, a_m, norm));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -140,8 +143,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moveMMPP_soft_plus", (DL_FUNC) &_moveMMPP_soft_plus, 2},
     {"_moveMMPP_load_Q_mult", (DL_FUNC) &_moveMMPP_load_Q_mult, 9},
     {"_moveMMPP_load_Q_add", (DL_FUNC) &_moveMMPP_load_Q_add, 8},
-    {"_moveMMPP_load_L", (DL_FUNC) &_moveMMPP_load_L, 6},
-    {"_moveMMPP_mmpp_arma", (DL_FUNC) &_moveMMPP_mmpp_arma, 21},
+    {"_moveMMPP_load_L", (DL_FUNC) &_moveMMPP_load_L, 8},
+    {"_moveMMPP_mmpp_arma", (DL_FUNC) &_moveMMPP_mmpp_arma, 22},
     {NULL, NULL, 0}
 };
 
