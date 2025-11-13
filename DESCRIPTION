@@ -12,11 +12,11 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends:
-    Matrix
+    R (>= 4.1.0), Matrix
 Imports: 
     dplyr, sf, spdep, tidyr, units, lubridate, optimx, numDeriv, terra, rARPACK
 LinkingTo: 
-    Rcpp, RcppArmadillo, expQ2
+    Rcpp (>= 1.1.0), RcppArmadillo (>= 15.0.2), expQ2
 Remotes: 
     dsjohnson/expQ2
 NeedsCompilation: yes
