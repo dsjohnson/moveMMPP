@@ -74,7 +74,7 @@ arma::sp_mat load_Q_mult(const arma::umat& from_to, const arma::vec& Xb_q_r, con
   
   arma::sp_mat Qm(from_to, Qm_vals, ns, ns);
   if(norm){
-    Qm = normalise(Qm, 1, 1);
+    Qm = arma::normalise(Qm, 1, 1);
     Qm.diag().ones();
     Qm.diag() *= -1;
     Q = Qr * Qm;
