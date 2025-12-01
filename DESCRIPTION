@@ -1,6 +1,6 @@
 Package: moveMMPP
 Title: Fit Continuous-Time Markov Modulated Poisson Process Movement Models to Animal Resight Data
-Version: 0.0.0.9032
+Version: 0.0.0.9033
 Date: December 1, 2025
 Authors@R: 
     person("Devin", "Johnson", , "devin.johnson@noaa.gov", role = c("aut", "cre"))
