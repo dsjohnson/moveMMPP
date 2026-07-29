@@ -11,5 +11,10 @@ Using animal resight data, the package functions allow the user to estimate move
 \author{
 \strong{Maintainer}: Devin Johnson \email{devin.johnson@noaa.gov}
 
+Authors:
+\itemize{
+  \item Devin Johnson \email{devin.johnson@noaa.gov}
+}
+
 }
 \keyword{internal}

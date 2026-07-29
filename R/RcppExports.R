@@ -29,3 +29,7 @@ mmpp_arma <- function(id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_
     .Call(`_moveMMPP_mmpp_arma`, id, period, dt, cell, ns, np, Xb_l, fix_l, period_l, cell_l, from_to, Xb_q_r, Xb_q_m, eq_prec, link_l, link_r, link_m, struc, a_l, a_r, a_m, norm)
 }
 
+# Register entry points for exported C++ functions
+methods::setLoadAction(function(ns) {
+    .Call(`_moveMMPP_RcppExport_registerCCallable`)
+})
